@@ -1,0 +1,158 @@
+/* ============================================================
+   FlapKap Partner Portal — design tokens
+
+   Rebranded onto the "neonblack" identity used by FlapKap's internal
+   commercial dashboard, so the two products read as one family:
+
+   - Near-blacks are biased blue, not neutral. #070b13 rather than #0D0D0F.
+     A neutral grey ramp reads as unconsidered next to it.
+   - The navigation rail is DARKER than the page it frames. Most dark UIs do
+     the opposite; this inversion is the most recognisable thing in the system.
+   - One accent, electric: #280CFF. Far more saturated than the old #2E6BFF,
+     and it fixes a real problem — white on it is 8.07:1 where white on
+     #2E6BFF was 4.50:1, right on the AA line.
+   - Semantic colours are deliberately desaturated for a dark ground.
+     #4ec07e not #22C55E, #f08aa0 not #EF4444.
+   - Every colour that carries TEXT has an `-ink` sibling. A saturated fill
+     and legible type are different jobs and cannot be the same value.
+
+   Type is Bricolage Grotesque for display and Hanken Grotesk for everything
+   else, both self-hosted.
+   ============================================================ */
+
+:root {
+  color-scheme: dark;
+
+  /* ---------- Surfaces ---------- */
+  --bg:              #070b13;   /* the page                              */
+  --rail:            #04060b;   /* sidebar — deliberately below the page  */
+  --rail-line:       #161d2a;
+  --surface-1:       #0b111b;   /* topbar, inset panels                  */
+  --surface-2:       #0f1521;   /* cards                                 */
+  --surface-3:       #131b29;   /* rows, inputs                          */
+  --surface-4:       #182131;   /* controls, hover, segmented track      */
+
+  --border:          #1c2433;
+  --border-strong:   #2b3648;
+  --divider:         rgba(231, 236, 244, 0.07);
+
+  /* ---------- Accent ---------- */
+  --primary:         #280CFF;   /* fills, and only fills                 */
+  --primary-hover:   #1b06c2;
+  --primary-active:  --primary-hover;
+  --primary-text:    #9db0ff;   /* 8.78:1 on cards — use for type        */
+  --primary-deep:    #1b06c2;
+  --primary-soft:    #151b3a;
+  --primary-line:    rgba(90, 114, 255, 0.42);
+  --primary-glow:    rgba(40, 12, 255, 0.45);
+  --brand-grad:      linear-gradient(135deg, #280CFF 0%, #5a72ff 100%);
+
+  /* Tier accent. Shares the warm gold of the parent system rather than
+     inventing a second yellow. */
+  --gold:            #e6b860;
+  --gold-soft:       #221b0d;
+  --gold-line:       rgba(230, 184, 96, 0.34);
+
+  /* ---------- Text ---------- */
+  /* Not pure white. A cool off-white sits correctly on a blue-biased ground
+     where #FFFFFF glares. */
+  --text:            #e7ecf4;
+  --text-secondary:  #9aa4ba;   /* 7.38:1 on cards                        */
+  --text-muted:      #868fa2;   /* 5.05:1 even on surface-4, the lightest
+                                   ground it ever lands on                */
+  --text-on-primary: #ffffff;   /* 8.07:1 on --primary                    */
+
+  /* ---------- Status ---------- */
+  --success:         #4ec07e;
+  --success-ink:     #7fd0a0;
+  --success-soft:    #12361f;
+  --success-line:    rgba(78, 192, 126, 0.38);
+
+  --warning:         #e6b860;
+  --warning-ink:     #e6b860;
+  --warning-soft:    #221b0d;
+  --warning-line:    rgba(230, 184, 96, 0.36);
+
+  --danger:          #f08aa0;
+  --danger-text:     #f08aa0;
+  --danger-deep:     #8e2438;   /* solid badge ground, white type on top   */
+  --danger-soft:     #2a1214;
+  --danger-line:     rgba(240, 138, 160, 0.40);
+
+  /* ---------- Type ---------- */
+  --font-display: 'Bricolage Grotesque', 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  /* Fixed rem scale, not fluid — product UI is viewed at a consistent DPI
+     and a clamped heading that shrinks inside a panel looks worse. Ratio
+     ~1.2: there are many type roles here, so exaggerated contrast is noise. */
+  --text-h1:   1.75rem;
+  --text-h2:   1.375rem;
+  --text-h3:   1.125rem;
+  --text-h4:   1rem;
+  --text-body: 0.9375rem;
+  --text-sm:   0.875rem;
+  --text-xs:   0.75rem;
+
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  --leading-tight:  1.16;
+  --leading-snug:   1.34;
+  --leading-normal: 1.55;
+
+  --tracking-tight: -0.022em;
+  --tracking-micro:  0.06em;
+
+  /* ---------- Spacing (8px base) ---------- */
+  --sp-1: 0.25rem; --sp-2: 0.5rem;  --sp-3: 0.75rem; --sp-4: 1rem;
+  --sp-5: 1.25rem; --sp-6: 1.5rem;  --sp-8: 2rem;    --sp-10: 2.5rem;
+  --sp-12: 3rem;   --sp-16: 4rem;
+
+  /* ---------- Radii — the parent system's 7 / 10 / 14 ----------
+     Tighter than the old 8/12/16 and the reason the reference reads as
+     precise rather than soft. Pills stay for small interactive controls. */
+  --radius-sm:   7px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   14px;
+  --radius-pill: 9999px;
+
+  /* ---------- Elevation ---------- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 2px 4px rgba(0, 0, 0, 0.5), 0 20px 50px rgba(0, 0, 0, 0.5);
+
+  /* ---------- Layout ---------- */
+  --sidebar-w:   250px;
+  --topbar-h:    64px;
+  --content-max: 1180px;
+  --form-max:    620px;
+  --page-pad:    var(--sp-8);
+
+  /* ---------- Controls ---------- */
+  --control-h:      48px;
+  --control-h-sm:   40px;
+  --touch-min:      44px;
+  --icon-chip:      40px;
+  --focus-ring:     0 0 0 2px var(--bg), 0 0 0 4px var(--primary-text);
+
+  /* ---------- Motion ----------
+     Real ease-out. Built-in curves lack the punch that reads as intentional,
+     and ease-in delays the first frame — the moment the user is watching. */
+  --ease-out:    cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --dur-press:  160ms;
+  --dur-fast:   150ms;
+  --dur-normal: 200ms;
+  --dur-enter:  400ms;
+}
+
+@media (max-width: 900px) {
+  :root {
+    --page-pad: var(--sp-4);
+    --text-h1:  1.5rem;
+  }
+}
