@@ -293,16 +293,18 @@
 @keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
 /* ---------------- Dashboard grid ----------------
-   Target and top-ups stack in the main column; what needs the broker sits in
-   a rail beside them, so "how am I doing" and "what must I do" are legible in
-   one look without scrolling between them. */
+   Two peers side by side: how the quarter is going, and the cheapest way to
+   move it. `stretch` rather than `start`, because two cards of equal standing
+   sitting at different heights reads as a mistake. */
 .dash-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
   gap: var(--sp-6);
-  align-items: start;
+  align-items: stretch;
 }
-.dash-grid__main { display: grid; gap: var(--sp-6); min-width: 0; }
+.dash-grid > * { min-width: 0; }
+.dash-grid > aside > .card { height: 100%; }
+
 @media (max-width: 1080px) {
   .dash-grid { grid-template-columns: minmax(0, 1fr); }
 }
