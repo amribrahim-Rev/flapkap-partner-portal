@@ -4,7 +4,7 @@ import {
   FilePlus, CheckCircle, ChatCircleDots, FileX, Signature, Hourglass,
   CaretRight, TrendUp,
 } from '@phosphor-icons/react'
-import { applications, broker, clients, payable, expected } from '../lib/data'
+import { applications, broker, clients, commissionPaid, dealsPaid, payable, expected } from '../lib/data'
 import { partB, tiers, stageGroups } from '../lib/domain'
 import { aed, plural } from '../lib/format'
 import {
@@ -178,7 +178,7 @@ export function Dashboard() {
       <section className="card" aria-label="Commission summary">
         <StatStrip
           stats={[
-            { label: 'Paid to you', value: aed(broker.commissionPaidYtd), note: `${plural(broker.dealsPaidYtd, 'deal')} this year` },
+            { label: 'Paid to you', value: aed(commissionPaid), note: `${plural(dealsPaid, 'deal')} this year` },
             { label: 'Payable', value: aed(payableTotal), tone: 'primary', note: 'Awaiting first repayment' },
             { label: 'In live offers', value: aed(expectedTotal), tone: 'muted', note: 'Not earned until funded' },
           ]}

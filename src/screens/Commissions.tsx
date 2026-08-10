@@ -1,5 +1,5 @@
 import { DownloadSimple } from '@phosphor-icons/react'
-import { applications, broker, payable, expected } from '../lib/data'
+import { applications, broker, commissionPaid, dealsPaid, payable, expected } from '../lib/data'
 import { partA, tiers, FEE_FLOOR } from '../lib/domain'
 import { aed, longDate, num, pct, plural } from '../lib/format'
 import { Button, Callout, ICON_WEIGHT, PageHead, Pill, SectionHead, StatStrip } from '../components/ui'
@@ -33,7 +33,7 @@ export function Commissions() {
       <section className="card" aria-label="Commission summary">
         <StatStrip
           stats={[
-            { label: 'Paid', value: aed(broker.commissionPaidYtd), note: `${plural(broker.dealsPaidYtd, 'deal')} this year` },
+            { label: 'Paid', value: aed(commissionPaid), note: `${plural(dealsPaid, 'deal')} this year` },
             { label: 'Payable', value: aed(payableTotal), tone: 'primary', note: "Awaiting the client's first repayment" },
             { label: 'In live offers', value: aed(expectedTotal), tone: 'muted', note: 'Not earned until funded' },
           ]}

@@ -1,4 +1,4 @@
-import type { Application, ClientRecord, DocumentItem, NotificationItem, Tier } from './types'
+import type { Application, ClientRecord, ClosedCase, DocumentItem, NotificationItem, Product, Tier } from './types'
 import { partA } from './domain'
 
 /** Fixed reference date so every figure on screen reconciles. */
@@ -22,8 +22,6 @@ export const broker = {
       { label: 'Sep', disbursed: 0, status: 'upcoming' as const },
     ],
   },
-  commissionPaidYtd: 148_200,
-  dealsPaidYtd: 14,
   /** Quality score gating the tier bonus. Volume alone must not unlock it. */
   qualityScore: 78,
   qualityFloor: 70,
@@ -369,6 +367,46 @@ export const applications: Application[] = [
   },
 ]
 
+/* ---------------- Closed case history ----------------
+   Jan–May 2026, deliberately not overlapping the live pipeline above, so
+   nothing is counted twice. Every commission figure is computed by partA()
+   rather than typed in, which is why the reports reconcile with the dashboard.
+   ------------------------------------------------------------------ */
+
+function funded(
+  id: string, company: string, industry: string, product: Product,
+  submittedOn: string, disbursedOn: string, amount: number, feeRate: number, daysToOutcome: number,
+): ClosedCase {
+  return {
+    id, company, industry, product, submittedOn, disbursedOn,
+    disbursedAmount: amount, feeRate, commission: partA(amount, feeRate),
+    outcome: 'funded', daysToOutcome,
+  }
+}
+
+export const caseHistory: ClosedCase[] = [
+  funded('h1',  'Zayed Furnishings',  'Retail',            'short_term_loan',     '2025-12-02', '2026-01-14',   450_000, 0.0175, 43),
+  funded('h2',  'Nile Textiles',      'Manufacturing',     'invoice_discounting', '2025-12-11', '2026-01-27',   300_000, 0.0200, 47),
+  funded('h3',  'Sahara Cold Chain',  'Logistics',         'short_term_loan',     '2026-01-06', '2026-02-11',   700_000, 0.0175, 36),
+  funded('h4',  'Palm View Clinics',  'Healthcare',        'short_term_loan',     '2026-01-19', '2026-02-24',   380_000, 0.0150, 36),
+  funded('h5',  'Gulf Stationery',    'Wholesale',         'invoice_discounting', '2026-02-03', '2026-03-10',   260_000, 0.0225, 35),
+  funded('h6',  'Emirates Bakehouse', 'Food & beverage',   'short_term_loan',     '2026-02-16', '2026-03-25',   520_000, 0.0200, 37),
+  funded('h7',  'Delta Auto Care',    'Automotive parts',  'short_term_loan',     '2026-03-09', '2026-04-13',   340_000, 0.0175, 35),
+  funded('h8',  'Skyline Interiors',  'Contracting',       'short_term_loan',     '2026-03-24', '2026-04-29',   610_000, 0.0150, 36),
+  funded('h9',  'Oasis Pharma',       'Healthcare',        'invoice_discounting', '2026-04-07', '2026-05-12',   880_000, 0.0175, 35),
+  funded('h10', 'Rapid Courier',      'Logistics',         'short_term_loan',     '2026-04-21', '2026-05-26',   240_000, 0.0225, 35),
+
+  /* Declined. The reason strings are the spec's own categories, so the
+     drop-off report tells a broker what to pre-screen rather than just that
+     they lost. */
+  { id: 'h11', company: 'Dune Logistics',      industry: 'Logistics',        product: 'short_term_loan',     submittedOn: '2026-01-13', outcome: 'declined', diedAtStage: 'credit_review', declineReason: 'AECB score below minimum', daysToOutcome: 12 },
+  { id: 'h12', company: 'Corniche Cafe',       industry: 'Food & beverage',  product: 'short_term_loan',     submittedOn: '2026-02-09', outcome: 'declined', diedAtStage: 'aip_review',    declineReason: 'Revenue below minimum',      daysToOutcome: 4  },
+  { id: 'h13', company: 'Sandstone Build',     industry: 'Contracting',      product: 'short_term_loan',     submittedOn: '2026-03-02', outcome: 'declined', diedAtStage: 'credit_review', declineReason: 'High cash deposit ratio',    daysToOutcome: 15 },
+  { id: 'h14', company: 'Lantern Retail',      industry: 'Retail',           product: 'invoice_discounting', submittedOn: '2026-03-30', outcome: 'declined', diedAtStage: 'aip_review',    declineReason: 'Low average balance',        daysToOutcome: 5  },
+  { id: 'h15', company: 'Harbour Traders',     industry: 'Wholesale',        product: 'short_term_loan',     submittedOn: '2026-04-14', outcome: 'declined', diedAtStage: 'docs_pending',  declineReason: 'Documents never completed',  daysToOutcome: 31 },
+  { id: 'h16', company: 'Vista Fitness',       industry: 'Fitness',          product: 'short_term_loan',     submittedOn: '2026-04-27', outcome: 'withdrawn', diedAtStage: 'offer_issued', declineReason: 'Client took another offer',  daysToOutcome: 28 },
+]
+
 /* ---------------- Clients ---------------- */
 
 export const clients: ClientRecord[] = [
@@ -443,6 +481,27 @@ export const notifications: NotificationItem[] = [
 ]
 
 /* ---------------- Derived views ---------------- */
+
+/**
+ * Commission actually paid, and the deals behind it — derived, never typed in.
+ * Reports that disagree with the dashboard are worse than no reports, and the
+ * only way to guarantee they agree is to compute both from one place.
+ */
+export const paidCases = [
+  ...caseHistory.filter((c) => c.outcome === 'funded'),
+  ...applications
+    .filter((a) => a.commissionStatus === 'paid')
+    .map((a) => ({
+      id: a.id, company: a.company, industry: a.industry,
+      product: a.offer!.product, submittedOn: a.submittedOn,
+      disbursedOn: a.disbursedOn, disbursedAmount: a.disbursedAmount,
+      feeRate: a.offer!.feeRate, commission: a.commission,
+      outcome: 'funded' as const, daysToOutcome: 0,
+    })),
+]
+
+export const commissionPaid = paidCases.reduce((s, c) => s + (c.commission ?? 0), 0)
+export const dealsPaid = paidCases.length
 
 export const actionRequired = applications.filter((a) => a.owner === 'you')
 

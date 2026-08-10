@@ -374,6 +374,55 @@
 .task-line__title { font-size: var(--text-body); font-weight: var(--weight-semibold); transition: color var(--dur-fast) var(--ease-out); }
 .task-line__meta { font-size: var(--text-sm); color: var(--text-secondary); margin-top: 1px; }
 
+/* ---------------- Filter bar ----------------
+   One row that drives every block below it, so there is never a question of
+   which figures a filter applies to. */
+.filterbar {
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--sp-4);
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: var(--sp-4) var(--sp-5);
+}
+.filterbar__group { display: grid; gap: 6px; }
+.filterbar__label {
+  font-size: var(--text-xs); font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-micro); text-transform: uppercase; color: var(--text-muted);
+}
+.filterbar .select, .filterbar .input { min-height: var(--control-h-sm); min-width: 150px; }
+
+/* ---------------- Column chart ----------------
+   Bars built from divs rather than a chart library: six to twelve values do
+   not justify the dependency, and this way the type and colour come from the
+   same tokens as everything else. */
+.chart { display: flex; align-items: flex-end; gap: var(--sp-2); height: 190px; }
+.chart__col { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; min-width: 0; }
+.chart__bar {
+  width: 100%; max-width: 54px; border-radius: 5px 5px 2px 2px;
+  background: var(--gold);
+  transform-origin: bottom center;
+  animation: rise-bar var(--dur-enter) var(--ease-out) both;
+  position: relative;
+}
+@keyframes rise-bar { from { transform: scaleY(0); } }
+.chart__val {
+  font-family: var(--font-display); font-size: var(--text-xs); font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.chart__x { font-size: var(--text-xs); color: var(--text-secondary); }
+@media (hover: hover) and (pointer: fine) {
+  .chart__col:hover .chart__bar { filter: brightness(1.15); }
+}
+
+/* Horizontal meter, for drop-off and per-stage timing. */
+.meter { display: grid; gap: var(--sp-3); }
+.meter__row { display: grid; grid-template-columns: minmax(120px, 1.1fr) minmax(0, 2fr) auto; gap: var(--sp-4); align-items: center; }
+.meter__track { height: 10px; border-radius: var(--radius-pill); background: var(--surface-4); overflow: hidden; }
+.meter__fill { display: block; height: 100%; border-radius: inherit; transform-origin: left center; animation: grow var(--dur-enter) var(--ease-out) both; }
+.meter__num { font-family: var(--font-display); font-variant-numeric: tabular-nums; font-weight: var(--weight-semibold); font-size: var(--text-sm); white-space: nowrap; }
+@media (max-width: 640px) {
+  .meter__row { grid-template-columns: minmax(0, 1fr) auto; }
+  .meter__row > .meter__track { grid-column: 1 / -1; }
+}
+
 /* ---------------- Gauge ----------------
    A progress bar that names where you actually are: the fill ends in a
    marker, and the figure achieved sits above it rather than in a caption

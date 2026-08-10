@@ -126,6 +126,30 @@ export interface ClientRecord {
   lastActivity: string
 }
 
+/**
+ * A closed case from before the current pipeline window. Reports need a year
+ * of history to be worth opening; the live `applications` array only covers
+ * the last few weeks.
+ */
+export interface ClosedCase {
+  id: string
+  company: string
+  industry: string
+  product: Product
+  submittedOn: string
+  /** Set when the case funded. */
+  disbursedOn?: string
+  disbursedAmount?: number
+  feeRate?: number
+  commission?: number
+  /** How far it got before dying. Used for drop-off analysis. */
+  outcome: 'funded' | 'declined' | 'withdrawn'
+  diedAtStage?: Stage
+  declineReason?: string
+  /** Working days from submission to decision or disbursal. */
+  daysToOutcome: number
+}
+
 export interface NotificationItem {
   id: string
   title: string
