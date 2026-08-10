@@ -110,6 +110,41 @@ export function Progress({
 }
 
 /**
+ * Donut — proportion as a ring.
+ *
+ * Paired with a bar rather than replacing one: the bar carries the absolute
+ * figures, the ring carries the share. Sweeps in once on mount, which is the
+ * dashboard's one authored moment.
+ */
+export function Donut({
+  value, max, caption, label,
+}: { value: number; max: number; caption: string; label: string }) {
+  const R = 74
+  const STROKE = 13
+  const C = 2 * Math.PI * R
+  const pctValue = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)) : 0
+  const offset = C * (1 - pctValue / 100)
+  return (
+    <div className="donut" role="img" aria-label={`${label}: ${pctValue.toFixed(1)}%`}>
+      <svg viewBox="0 0 172 172" aria-hidden="true">
+        <circle className="donut__track" cx="86" cy="86" r={R} strokeWidth={STROKE} />
+        <circle
+          className="donut__fill"
+          cx="86" cy="86" r={R} strokeWidth={STROKE}
+          strokeDasharray={C}
+          strokeDashoffset={offset}
+          style={{ ['--circumference' as string]: `${C}` }}
+        />
+      </svg>
+      <div className="donut__center">
+        <span className="donut__pct">{pctValue.toFixed(1)}%</span>
+        <span className="donut__caption">{caption}</span>
+      </div>
+    </div>
+  )
+}
+
+/**
  * Gauge — a progress bar that says where you are, not just how full it is.
  * The fill ends in a marker with the achieved figure above it, so the number
  * and its position are the same piece of information.
