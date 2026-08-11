@@ -46,7 +46,7 @@ export function Commissions() {
           action={
             <span className="text-sm">
               <span className="secondary">Gold bonus to date </span>
-              <strong className="tnum" style={{ color: 'var(--gold)' }}>{aed(goldTotal)}</strong>
+              <strong className="tnum" style={{ color: 'var(--gold-ink)' }}>{aed(goldTotal)}</strong>
             </span>
           }
         />
@@ -62,7 +62,7 @@ export function Commissions() {
                 <th scope="col" className="right">Amount</th>
                 <th scope="col" className="right">Fee</th>
                 <th scope="col" className="right">Your commission</th>
-                <th scope="col" className="right" style={{ color: 'var(--gold)' }}>Gold bonus</th>
+                <th scope="col" className="right" style={{ color: 'var(--gold-ink)' }}>Gold bonus</th>
                 <th scope="col" className="right">Status</th>
               </tr>
             </thead>
@@ -76,7 +76,7 @@ export function Commissions() {
                   <td data-label="Amount" className="num">{num(a.disbursedAmount!)}</td>
                   <td data-label="Fee" className="num">{pct(a.offer!.feeRate)}</td>
                   <td data-label="Your commission" className="num">{num(a.commission!)}</td>
-                  <td data-label="Gold bonus" className="num" style={{ color: 'var(--gold)' }}>
+                  <td data-label="Gold bonus" className="num" style={{ color: 'var(--gold-ink)' }}>
                     {num(goldBonus(a.disbursedAmount!))}
                   </td>
                   <td data-label="Status" className="right">

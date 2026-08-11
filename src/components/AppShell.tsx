@@ -7,6 +7,7 @@ import {
 import { broker, actionRequired, liveApplications, clients, notifications } from '../lib/data'
 import { tiers } from '../lib/domain'
 import { IconButton, ICON_WEIGHT } from './ui'
+import { ThemeToggle } from './ThemeToggle'
 
 const openQueries = liveApplications.flatMap((a) => a.queries).filter((q) => !q.resolved).length
 const docsNeedingAction = liveApplications.flatMap((a) => a.documents)
@@ -110,6 +111,7 @@ export function AppShell() {
             <span className="pill pill--gold" title={`${tier.label} partner`}>
               <Medal size={13} weight="fill" aria-hidden /> {tier.label}
             </span>
+            <ThemeToggle />
             <IconButton label={`Notifications, ${unread} unread`} plain onClick={() => navigate('/notifications')}>
               <span style={{ position: 'relative', display: 'grid', placeItems: 'center' }}>
                 <Bell size={20} weight={ICON_WEIGHT} />

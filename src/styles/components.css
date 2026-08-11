@@ -56,7 +56,7 @@
 }
 .nav__item[aria-current='page'] {
   color: var(--text); font-weight: var(--weight-semibold);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--nav-active-bg);
   border-left-color: var(--primary);
 }
 .nav__item .nav__count {
@@ -136,7 +136,7 @@
   .btn--ghost:hover:not(:disabled)     { background: var(--surface-4); }
   .btn--danger:hover:not(:disabled)    { background: var(--danger-soft); }
   .btn--quiet:hover:not(:disabled)     { color: var(--text); background: var(--surface-3); }
-  .nav__item:hover { background: rgba(255, 255, 255, 0.035); color: var(--text); }
+  .nav__item:hover { background: var(--nav-hover-bg); color: var(--text); }
 }
 
 .btn--sm    { height: var(--control-h-sm); padding: 0 var(--sp-4); font-size: var(--text-sm); }
@@ -241,7 +241,7 @@
 .chip--success { background: var(--success-soft); color: var(--success-ink); }
 .chip--warning { background: var(--warning-soft); color: var(--warning); }
 .chip--danger  { background: var(--danger-soft);  color: var(--danger-text); }
-.chip--gold    { background: var(--gold-soft);    color: var(--gold); }
+.chip--gold    { background: var(--gold-soft);    color: var(--gold-ink); }
 .chip--lg { flex-basis: 72px; width: 72px; height: 72px; }
 
 /* ---------------- Status vocabulary ----------------
@@ -264,7 +264,7 @@
 .pill--done    { color: var(--success-ink); background: var(--success-soft); border-color: var(--success-line); }
 .pill--closed  { color: var(--text-muted); background: var(--surface-3); border-color: var(--border); }
 .pill--urgent  { color: var(--danger-text); background: var(--danger-soft); border-color: var(--danger-line); }
-.pill--gold    { color: var(--gold); background: var(--gold-soft); border-color: var(--gold-line); }
+.pill--gold    { color: var(--gold-ink); background: var(--gold-soft); border-color: var(--gold-line); }
 
 /* Countdown. Never animated — the broker sees these constantly. */
 .clock {
@@ -483,7 +483,7 @@
 .funnel__bar::before {
   content: ''; position: absolute; inset: 0 0 auto 0; height: 1px;
   border-radius: inherit;
-  background: linear-gradient(90deg, transparent, rgba(231, 236, 244, 0.16), transparent);
+  background: linear-gradient(90deg, transparent, var(--lit-edge), transparent);
 }
 .funnel__bar[aria-expanded='true'] {
   border-color: var(--primary-line);

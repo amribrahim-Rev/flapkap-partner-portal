@@ -70,7 +70,8 @@ export interface StageGroup {
   key: string
   label: string
   stages: Stage[]
-  /** Funnel bar tint. Progresses cool -> blue -> green as money nears. */
+  /** Funnel bar tint, as a token: a tint that reads on #070b13 is invisible
+      on a light ground, so each theme supplies its own value. */
   tone: string
   /** Rejected sits outside the funnel; it is an exit, not a step. */
   inFunnel: boolean
@@ -78,12 +79,12 @@ export interface StageGroup {
 
 export const stageGroups: StageGroup[] = [
   { key: 'submitted',   label: 'Cases submitted',   stages: ['lead'],                                                              tone: 'rgba(154,164,186,0.08)', inFunnel: true },
-  { key: 'docs',        label: 'Uploading docs',    stages: ['docs_pending', 'full_app'],                                          tone: 'rgba(230,184,96,0.14)', inFunnel: true },
-  { key: 'risk',        label: 'Under risk review', stages: ['aip_review', 'credit_review'],                                       tone: 'rgba(154,164,186,0.15)', inFunnel: true },
-  { key: 'conditional', label: 'Conditional offer', stages: ['aip_approved'],                                                      tone: 'rgba(90,114,255,0.17)', inFunnel: true },
-  { key: 'final',       label: 'Final offer',       stages: ['offer_issued', 'offer_accepted'],                                    tone: 'rgba(90,114,255,0.32)', inFunnel: true },
-  { key: 'funded',      label: 'Funded',            stages: ['disbursing', 'disbursed', 'commission_payable', 'commission_paid'],   tone: 'rgba(78,192,126,0.26)', inFunnel: true },
-  { key: 'rejected',    label: 'Rejected',          stages: ['declined', 'aip_declined'],                                          tone: 'rgba(240,138,160,0.14)', inFunnel: false },
+  { key: 'docs',        label: 'Uploading docs',    stages: ['docs_pending', 'full_app'],                                          tone: 'var(--funnel-2)', inFunnel: true },
+  { key: 'risk',        label: 'Under risk review', stages: ['aip_review', 'credit_review'],                                       tone: 'var(--funnel-3)', inFunnel: true },
+  { key: 'conditional', label: 'Conditional offer', stages: ['aip_approved'],                                                      tone: 'var(--funnel-4)', inFunnel: true },
+  { key: 'final',       label: 'Final offer',       stages: ['offer_issued', 'offer_accepted'],                                    tone: 'var(--funnel-5)', inFunnel: true },
+  { key: 'funded',      label: 'Funded',            stages: ['disbursing', 'disbursed', 'commission_payable', 'commission_paid'],   tone: 'var(--funnel-6)', inFunnel: true },
+  { key: 'rejected',    label: 'Rejected',          stages: ['declined', 'aip_declined'],                                          tone: 'var(--funnel-0)', inFunnel: false },
 ]
 
 export function groupOf(stage: Stage): StageGroup | undefined {

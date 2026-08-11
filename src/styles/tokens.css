@@ -49,7 +49,8 @@
 
   /* Tier accent. Shares the warm gold of the parent system rather than
      inventing a second yellow. */
-  --gold:            #e6b860;
+  --gold:            #e6b860;   /* fills */
+  --gold-ink:        #e6b860;   /* text — same on dark, darkened on light */
   --gold-soft:       #221b0d;
   --gold-line:       rgba(230, 184, 96, 0.34);
 
@@ -148,6 +149,110 @@
   --dur-fast:   150ms;
   --dur-normal: 200ms;
   --dur-enter:  400ms;
+
+  /* ---------- Themeable chrome ----------
+     Values that were hardcoded rgba() in components and so could not follow
+     the theme. Funnel tints in particular: 0.14 alpha reads on #070b13 and
+     disappears entirely on a light ground. */
+  --nav-active-bg: rgba(255, 255, 255, 0.05);
+  --nav-hover-bg:  rgba(255, 255, 255, 0.035);
+  --lit-edge:      rgba(231, 236, 244, 0.16);
+
+  --funnel-0: rgba(240, 138, 160, 0.14);
+  --funnel-1: rgba(154, 164, 186, 0.10);
+  --funnel-2: rgba(230, 184, 96, 0.14);
+  --funnel-3: rgba(154, 164, 186, 0.15);
+  --funnel-4: rgba(90, 114, 255, 0.17);
+  --funnel-5: rgba(90, 114, 255, 0.32);
+  --funnel-6: rgba(78, 192, 126, 0.26);
+}
+
+/* ============================================================
+   Light theme
+   ============================================================
+
+   Not an inversion. Three rules carry the identity across:
+
+   1. The RAIL IS ALWAYS THE DEEPEST SURFACE. In dark that means darker than
+      the page (#04060b under #070b13); in light it means the most tinted
+      (#e9edf6 under #f4f6fb). Most light UIs put a white sidebar on a grey
+      page — the opposite — so keeping this is what makes both themes read as
+      the same product.
+   2. Neutrals stay biased blue. A pure grey ramp beside #280CFF looks
+      unconsidered on either ground.
+   3. Status colours are re-picked, not reused. #4ec07e is 2.29:1 on white —
+      it has to darken to ~#0f7a43 to be legible. The saturated versions
+      survive only as fills.
+   ============================================================ */
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg:              #f4f6fb;
+  --rail:            #e9edf6;   /* deepest surface, as in dark */
+  --rail-line:       #d3dae9;
+  --surface-1:       #eef1f8;
+  --surface-2:       #ffffff;   /* cards lift to white */
+  --surface-3:       #f4f6fb;
+  --surface-4:       #e6eaf4;
+
+  --border:          #dde3ef;
+  --border-strong:   #b9c3d6;
+  --divider:         rgba(11, 18, 32, 0.09);
+
+  --primary:         #280CFF;
+  --primary-hover:   #1b06c2;
+  --primary-text:    #2109cc;   /* darkened for type on white */
+  --primary-deep:    #1b06c2;
+  --primary-soft:    #e9e6ff;
+  --primary-line:    rgba(40, 12, 255, 0.32);
+  --primary-glow:    rgba(40, 12, 255, 0.25);
+
+  --gold:            #a8761a;   /* the light gold reads as beige on white */
+  --gold-ink:        #6b4805;   /* 7.37:1 on gold-soft; #a8761a was 3.61:1 */
+  --gold-soft:       #fdf3dd;
+  --gold-line:       rgba(168, 118, 26, 0.34);
+
+  --text:            #0b1220;
+  --text-secondary:  #4b5768;
+  --text-muted:      #59677a;   /* 4.74:1 even on surface-4 */
+  --text-on-primary: #ffffff;
+
+  --success:         #0f7a43;
+  --success-ink:     #0b6236;
+  --success-soft:    #e2f5ea;
+  --success-line:    rgba(15, 122, 67, 0.34);
+
+  --warning:         #8a6410;
+  --warning-ink:     #70510a;
+  --warning-soft:    #fdf1d8;
+  --warning-line:    rgba(138, 100, 16, 0.34);
+
+  --danger:          #b3123a;
+  --danger-text:     #9d0f33;
+  --danger-deep:     #8e0c2c;
+  --danger-soft:     #fdeaee;
+  --danger-line:     rgba(179, 18, 58, 0.32);
+
+  --shadow-sm: 0 1px 2px rgba(11, 18, 32, 0.06);
+  --shadow-md: 0 1px 2px rgba(11, 18, 32, 0.06), 0 10px 30px rgba(11, 18, 32, 0.07);
+  --shadow-lg: 0 2px 4px rgba(11, 18, 32, 0.08), 0 20px 50px rgba(11, 18, 32, 0.12);
+
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--primary);
+
+  --nav-active-bg: rgba(11, 18, 32, 0.055);
+  --nav-hover-bg:  rgba(11, 18, 32, 0.035);
+  --lit-edge:      rgba(11, 18, 32, 0.10);
+
+  /* Tints raised well above the dark values: the same alpha over white is
+     imperceptible, and the funnel silhouette depends on being seen. */
+  --funnel-0: rgba(179, 18, 58, 0.14);
+  --funnel-1: rgba(75, 87, 104, 0.14);
+  --funnel-2: rgba(168, 118, 26, 0.22);
+  --funnel-3: rgba(75, 87, 104, 0.20);
+  --funnel-4: rgba(40, 12, 255, 0.13);
+  --funnel-5: rgba(40, 12, 255, 0.26);
+  --funnel-6: rgba(15, 122, 67, 0.24);
 }
 
 @media (max-width: 900px) {

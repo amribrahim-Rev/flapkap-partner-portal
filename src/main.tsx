@@ -19,6 +19,11 @@ import './styles/tokens.css'
 import './styles/base.css'
 import './styles/components.css'
 import { router } from './router'
+import { applyTheme, readTheme } from './components/ThemeToggle'
+
+/* Set the theme before the first paint, otherwise the app flashes dark for a
+   frame before a light-mode user's choice is applied. */
+applyTheme(readTheme())
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
