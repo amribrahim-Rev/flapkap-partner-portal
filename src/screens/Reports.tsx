@@ -7,7 +7,9 @@ import {
 } from '../lib/reports'
 import { productLabel } from '../lib/domain'
 import { aed, longDate, num, pct, plural } from '../lib/format'
-import { Button, Callout, EmptyState, ICON_WEIGHT, PageHead, SectionHead, StatStrip } from '../components/ui'
+import {
+  Button, Callout, EmptyState, ICON_EMPTY, ICON_INLINE, ICON_WEIGHT, PageHead, SectionHead, StatStrip,
+} from '../components/ui'
 
 export function Reports() {
   const [filters, setFilters] = useState<Filters>({
@@ -52,7 +54,7 @@ export function Reports() {
             variant="secondary"
             onClick={download}
             disabled={rows.length === 0}
-            icon={<DownloadSimple size={17} weight={ICON_WEIGHT} aria-hidden />}
+            icon={<DownloadSimple size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden />}
           >
             Export CSV
           </Button>
@@ -117,7 +119,7 @@ export function Reports() {
       {rows.length === 0 ? (
         <div className="card">
           <EmptyState
-            icon={<ChartBar size={28} weight={ICON_WEIGHT} />}
+            icon={<ChartBar size={ICON_EMPTY} weight={ICON_WEIGHT} />}
             title="No cases in this period"
             body="Widen the dates or clear the filters. Reports count cases by the date you submitted them."
             action={<Button variant="secondary" onClick={() => setFilters((f) => ({ ...f, period: 'last12', industry: 'all', product: 'all' }))}>Reset</Button>}

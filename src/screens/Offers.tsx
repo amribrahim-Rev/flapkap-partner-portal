@@ -3,7 +3,9 @@ import { Receipt, Eye, Check, WhatsappLogo, CaretRight } from '@phosphor-icons/r
 import { applications } from '../lib/data'
 import { partA, productLabel } from '../lib/domain'
 import { aed, longDate, pct, plural } from '../lib/format'
-import { Button, Callout, Chip, Clock, EmptyState, ICON_WEIGHT, PageHead, Pill, SectionHead } from '../components/ui'
+import {
+  Button, Callout, Chip, Clock, EmptyState, ICON_EMPTY, ICON_INLINE, ICON_PILL, ICON_ROW, ICON_WEIGHT, PageHead, Pill, SectionHead,
+} from '../components/ui'
 
 const withOffers = applications.filter((a) => a.offer)
 const open = withOffers.filter((a) => !a.offer!.signedAt)
@@ -29,7 +31,7 @@ export function Offers() {
       {open.length === 0 ? (
         <div className="card">
           <EmptyState
-            icon={<Receipt size={28} weight={ICON_WEIGHT} />}
+            icon={<Receipt size={ICON_EMPTY} weight={ICON_WEIGHT} />}
             title="No offers out"
             body="When credit issues an offer it lands here with a signing link you can send straight to your client, and you will see the moment they open it."
           />
@@ -44,7 +46,7 @@ export function Offers() {
               return (
                 <li key={a.id}>
                   <div className={`item${left <= 3 ? ' item--danger' : ''}`} style={{ alignItems: 'flex-start' }}>
-                    <Chip tone={left <= 3 ? 'danger' : 'primary'}><Receipt size={19} weight={ICON_WEIGHT} /></Chip>
+                    <Chip tone={left <= 3 ? 'danger' : 'primary'}><Receipt size={ICON_ROW} weight={ICON_WEIGHT} /></Chip>
 
                     <div className="grow">
                       <Link to={`/cases/${a.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
@@ -57,14 +59,14 @@ export function Offers() {
                       {/* Signing telemetry. The thing a broker cannot get on WhatsApp. */}
                       <div className="row-tight wrap text-sm" style={{ gap: 'var(--sp-4)', marginTop: 'var(--sp-3)' }}>
                         <span className="row-tight" style={{ gap: 5, color: 'var(--success)' }}>
-                          <Check size={14} weight="bold" aria-hidden /> Link sent
+                          <Check size={ICON_PILL} weight="bold" aria-hidden /> Link sent
                         </span>
                         <span className="row-tight" style={{ gap: 5, color: o.clientViewedAt ? 'var(--primary-text)' : 'var(--text-muted)' }}>
-                          <Eye size={14} weight={ICON_WEIGHT} aria-hidden />
+                          <Eye size={ICON_PILL} weight={ICON_WEIGHT} aria-hidden />
                           {o.clientViewedAt ? `Opened ${longDate(o.clientViewedAt)}` : 'Not opened yet'}
                         </span>
                         <span className="muted row-tight" style={{ gap: 5 }}>
-                          <Check size={14} weight={ICON_WEIGHT} aria-hidden /> Not signed
+                          <Check size={ICON_PILL} weight={ICON_WEIGHT} aria-hidden /> Not signed
                         </span>
                       </div>
 
@@ -77,7 +79,7 @@ export function Offers() {
                       <Clock tone={left <= 3 ? 'urgent' : left <= 7 ? 'soon' : 'calm'}>
                         {left <= 0 ? 'Expired' : `${plural(left, 'day')} left`}
                       </Clock>
-                      <Button size="sm" icon={<WhatsappLogo size={15} weight={ICON_WEIGHT} aria-hidden />}>
+                      <Button size="sm" icon={<WhatsappLogo size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden />}>
                         Resend link
                       </Button>
                     </div>
@@ -96,7 +98,7 @@ export function Offers() {
             {signed.map((a) => (
               <li key={a.id}>
                 <Link to={`/cases/${a.id}`} className="item item--link item--inset" style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <Chip tone="success"><Check size={19} weight="bold" /></Chip>
+                  <Chip tone="success"><Check size={ICON_ROW} weight="bold" /></Chip>
                   <div className="grow">
                     <h3 style={{ fontSize: 'var(--text-h4)' }}>{a.company}</h3>
                     <p className="secondary text-sm">
@@ -104,7 +106,7 @@ export function Offers() {
                     </p>
                   </div>
                   <Pill tone="pill--done">Signed</Pill>
-                  <span className="btn-icon" aria-hidden><CaretRight size={16} weight="bold" /></span>
+                  <span className="btn-icon" aria-hidden><CaretRight size={ICON_INLINE} weight="bold" /></span>
                 </Link>
               </li>
             ))}

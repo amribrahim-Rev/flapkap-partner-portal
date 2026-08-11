@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Check, ShieldCheck, Paperclip } from '@phosphor-icons/react'
-import { Button, Field, ICON_WEIGHT, PageHead, SelectField } from '../components/ui'
+import {
+  Button, Field, ICON_INLINE, ICON_PILL, ICON_WEIGHT, PageHead, SelectField,
+} from '../components/ui'
 
 const INDUSTRIES = [
   'Wholesale trading', 'Food & beverage', 'Retail', 'Logistics', 'IT services',
@@ -43,7 +45,7 @@ export function NewCase() {
     setErrors(next)
     if (Object.keys(next).length > 0) return
     setBusy(true)
-    window.setTimeout(() => navigate('/cases?new=1'), 700)
+    window.setTimeout(() => navigate('/pipeline?new=1'), 700)
   }
 
   return (
@@ -114,13 +116,13 @@ export function NewCase() {
                     {errors[d.id] && <p className="field__error" style={{ marginTop: 4 }}>{errors[d.id]}</p>}
                   </div>
                   {done ? (
-                    <span className="pill pill--done"><Check size={12} weight="bold" aria-hidden /> Attached</span>
+                    <span className="pill pill--done"><Check size={ICON_PILL} weight="bold" aria-hidden /> Attached</span>
                   ) : (
                     <Button
                       type="button"
                       size="sm"
                       variant="secondary"
-                      icon={<Paperclip size={14} weight={ICON_WEIGHT} aria-hidden />}
+                      icon={<Paperclip size={ICON_PILL} weight={ICON_WEIGHT} aria-hidden />}
                       onClick={() => setUploaded((u) => ({ ...u, [d.id]: true }))}
                     >
                       Upload
@@ -137,7 +139,7 @@ export function NewCase() {
           </p>
         </div>
 
-        <Button type="submit" block loading={busy} icon={<ShieldCheck size={18} weight="bold" aria-hidden />}>
+        <Button type="submit" block loading={busy} icon={<ShieldCheck size={ICON_INLINE} weight="bold" aria-hidden />}>
           Register case
         </Button>
 

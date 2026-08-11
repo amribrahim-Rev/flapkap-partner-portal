@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowRight, ShieldCheck } from '@phosphor-icons/react'
-import { Button, Callout, Field, ICON_WEIGHT } from '../components/ui'
+import {
+  Button, Callout, Field, ICON_INLINE, ICON_WEIGHT,
+} from '../components/ui'
 
 export function Login() {
   const navigate = useNavigate()
@@ -65,13 +67,13 @@ export function Login() {
             <a href="#forgot" className="text-sm">Forgot password?</a>
           </div>
 
-          <Button type="submit" block loading={busy} icon={<ArrowRight size={18} weight="bold" aria-hidden />}>
+          <Button type="submit" block loading={busy} icon={<ArrowRight size={ICON_INLINE} weight="bold" aria-hidden />}>
             Sign in
           </Button>
 
           <Callout>
             <span className="row-tight" style={{ gap: 6 }}>
-              <ShieldCheck size={15} weight={ICON_WEIGHT} aria-hidden />
+              <ShieldCheck size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden />
               Every document view and download is logged against your account.
             </span>
           </Callout>

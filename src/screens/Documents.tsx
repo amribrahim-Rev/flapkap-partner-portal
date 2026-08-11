@@ -1,67 +1,67 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  Check, CaretDown, CaretRight, ChatCircleDots, Files, CalendarX, ArrowClockwise, Paperclip,
+  Check, ArrowRight, ChatCircleDots, FileText, CalendarX, UploadSimple, WhatsappLogo,
 } from '@phosphor-icons/react'
 import { liveApplications } from '../lib/data'
-import { docStatusLabel, docStatusPill } from '../lib/domain'
+import { docStatusPill } from '../lib/domain'
 import { countdown, plural } from '../lib/format'
-import { Clock, EmptyState, ICON_WEIGHT, PageHead, Pill } from '../components/ui'
+import {
+  Button, Clock, EmptyState, ICON_EMPTY, ICON_INLINE, ICON_PILL, ICON_WEIGHT, PageHead, Pill,
+} from '../components/ui'
 import type { Application, DocumentItem, Query } from '../lib/types'
 
 /**
- * One block per client, everything they owe nested inside it.
+ * A client-first view: one card per client, everything they owe inside it.
  *
- * The previous version listed each outstanding document and each query as its
- * own top-level row, so a client with three problems appeared three times and
- * the page read as noise. Grouping means the count in the heading is the work,
- * and the detail is one click away.
+ * Status words are short and human rather than our internal vocabulary — a
+ * broker reading "Replacement required" has to translate it; "Needs update"
+ * they just understand.
  */
-interface Item {
-  kind: 'query' | 'doc'
-  query?: Query
-  doc?: DocumentItem
+const statusWord: Record<DocumentItem['status'], string> = {
+  pending: 'Missing',
+  rejected: 'Rejected',
+  replacement_required: 'Needs update',
+  under_review: 'With us',
+  verified: 'Clean',
 }
 
 interface Group {
   app: Application
-  items: Item[]
-  urgentHours?: number
+  docs: DocumentItem[]
+  queries: Query[]
+  soonestHours?: number
 }
 
 const groups: Group[] = liveApplications
   .map((app) => {
-    const items: Item[] = [
-      ...app.queries.filter((q) => !q.resolved).map((q) => ({ kind: 'query' as const, query: q })),
-      ...app.documents
-        .filter((d) => d.status === 'rejected' || d.status === 'replacement_required' || (d.required && d.status === 'pending'))
-        .map((d) => ({ kind: 'doc' as const, doc: d })),
-    ]
-    const hours = app.queries.filter((q) => !q.resolved).map((q) => q.dueInHours)
-    return { app, items, urgentHours: hours.length ? Math.min(...hours) : undefined }
+    const docs = app.documents.filter(
+      (d) => d.status === 'rejected' || d.status === 'replacement_required' || (d.required && d.status === 'pending'),
+    )
+    const queries = app.queries.filter((q) => !q.resolved)
+    const hours = queries.map((q) => q.dueInHours)
+    return { app, docs, queries, soonestHours: hours.length ? Math.min(...hours) : undefined }
   })
-  .filter((g) => g.items.length > 0)
-  /* Soonest deadline first; then most outstanding. */
-  .sort((a, b) => (a.urgentHours ?? 9e9) - (b.urgentHours ?? 9e9) || b.items.length - a.items.length)
+  .filter((g) => g.docs.length > 0 || g.queries.length > 0)
+  .sort((a, b) => (a.soonestHours ?? 9e9) - (b.soonestHours ?? 9e9) || b.docs.length - a.docs.length)
 
 const expiring = liveApplications.flatMap((app) =>
-  app.documents
-    .filter((d) => d.expiresInDays !== undefined && d.expiresInDays < 60)
-    .map((d) => ({ app, doc: d })),
+  app.documents.filter((d) => d.expiresInDays !== undefined && d.expiresInDays < 60).map((d) => ({ app, doc: d })),
 )
 
-const totalItems = groups.reduce((s, g) => s + g.items.length, 0)
+const totalItems = groups.reduce((s, g) => s + g.docs.length + g.queries.length, 0)
 
 export function Documents() {
-  const [open, setOpen] = useState<string | null>(groups[0]?.app.id ?? null)
+  /** Optimistic local state, so "Mark received" does something immediately. */
+  const [received, setReceived] = useState<Record<string, boolean>>({})
 
   if (groups.length === 0) {
     return (
       <div className="page">
-        <PageHead title="Documents & queries" />
+        <PageHead eyebrow="Client files" title="Documents & queries" />
         <div className="card">
           <EmptyState
-            icon={<Check size={28} weight={ICON_WEIGHT} />}
+            icon={<Check size={ICON_EMPTY} weight={ICON_WEIGHT} />}
             title="Everything is in"
             body="No document missing, no query open. We raise anything new here first, then by email."
           />
@@ -73,99 +73,143 @@ export function Documents() {
   return (
     <div className="page">
       <PageHead
+        eyebrow="Client files"
         title="Documents & queries"
-        meta={`${plural(totalItems, 'item')} across ${plural(groups.length, 'client')}`}
+        meta="A client-first view of what is clean, missing and worth a nudge."
+        actions={
+          <span className="secondary text-sm">
+            {plural(totalItems, 'item')} across {plural(groups.length, 'client')}
+          </span>
+        }
       />
 
-      <div className="list">
-        {groups.map(({ app, items, urgentHours }) => {
-          const isOpen = open === app.id
-          const queries = items.filter((i) => i.kind === 'query').length
-          const docs = items.filter((i) => i.kind === 'doc').length
-          return (
-            <div className="group" key={app.id}>
-              <button
-                className="group__head"
-                aria-expanded={isOpen}
-                onClick={() => setOpen(isOpen ? null : app.id)}
-              >
-                <span className="grow">
-                  <span className="semibold" style={{ display: 'block', fontSize: 'var(--text-h4)' }}>{app.company}</span>
-                  <span className="secondary text-sm">
-                    {[queries && plural(queries, 'query', 'queries'), docs && plural(docs, 'document')]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </span>
-                </span>
-                {urgentHours !== undefined && (
-                  <Clock tone={urgentHours < 24 ? 'urgent' : 'soon'}>{countdown(urgentHours)}</Clock>
-                )}
-                <CaretDown
-                  size={16}
-                  weight="bold"
-                  aria-hidden
-                  style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 150ms' }}
-                />
-              </button>
-
-              {isOpen && (
-                <div className="group__body tabpanel">
-                  {items.map((item, i) =>
-                    item.kind === 'query' ? (
-                      <div className="group__item" key={`q${i}`}>
-                        <ChatCircleDots size={19} weight={ICON_WEIGHT} color="var(--danger-text)" aria-hidden style={{ marginTop: 2, flex: '0 0 auto' }} />
-                        <div className="grow">
-                          <h3 style={{ fontSize: 'var(--text-h4)' }}>{item.query!.subject}</h3>
-                          <p className="secondary text-sm" style={{ marginTop: 3 }}>{item.query!.messages[0]?.body}</p>
-                        </div>
-                        <Link to={`/cases/${app.id}`} className="btn btn--primary btn--sm nowrap">Reply</Link>
-                      </div>
-                    ) : (
-                      <div className="group__item" key={`d${i}`}>
-                        <Files size={19} weight={ICON_WEIGHT} color="var(--text-muted)" aria-hidden style={{ marginTop: 2, flex: '0 0 auto' }} />
-                        <div className="grow">
-                          <div className="row-tight wrap" style={{ gap: 'var(--sp-2)' }}>
-                            <h3 style={{ fontSize: 'var(--text-h4)' }}>{item.doc!.name}</h3>
-                            <Pill tone={docStatusPill[item.doc!.status]}>{docStatusLabel[item.doc!.status]}</Pill>
-                          </div>
-                          {item.doc!.rejection && (
-                            <p className="secondary text-sm" style={{ marginTop: 3 }}>
-                              {item.doc!.rejection.reason} <strong style={{ color: 'var(--text)' }}>Send instead:</strong>{' '}
-                              {item.doc!.rejection.example}
-                            </p>
-                          )}
-                        </div>
-                        <Link
-                          to={`/cases/${app.id}`}
-                          className="btn btn--secondary btn--sm nowrap"
-                        >
-                          {item.doc!.status === 'pending'
-                            ? <><Paperclip size={14} weight={ICON_WEIGHT} aria-hidden /> Upload</>
-                            : <><ArrowClockwise size={14} weight="bold" aria-hidden /> Replace</>}
-                        </Link>
-                      </div>
-                    ),
-                  )}
-                </div>
-              )}
+      {groups.map(({ app, docs, queries, soonestHours }) => (
+        <section className="card" key={app.id} aria-labelledby={`c-${app.id}`}>
+          {/* "Open case" is always present — a broker reading a document problem
+              wants the case it belongs to, not a dead end. */}
+          <div className="between wrap" style={{ alignItems: 'flex-start', gap: 'var(--sp-4)' }}>
+            <div>
+              <h2 id={`c-${app.id}`}>{app.company}</h2>
+              <p className="secondary text-sm" style={{ marginTop: 4 }}>
+                {app.contactName} · {plural(docs.length + queries.length, 'item')} to clear
+              </p>
             </div>
-          )
-        })}
-      </div>
+            <div className="row-tight">
+              {soonestHours !== undefined && (
+                <Clock tone={soonestHours < 24 ? 'urgent' : 'soon'}>{countdown(soonestHours)}</Clock>
+              )}
+              <Link to={`/cases/${app.id}`} className="text-sm semibold row-tight" style={{ gap: 6 }}>
+                Open case <ArrowRight size={ICON_PILL} weight="bold" aria-hidden />
+              </Link>
+            </div>
+          </div>
+
+          {queries.length > 0 && (
+            <div className="region">
+              <h3>Queries</h3>
+              <p className="secondary text-sm" style={{ marginTop: 3 }}>
+                Answer these first — an open query holds the case.
+              </p>
+              <div className="list" style={{ marginTop: 'var(--sp-4)' }}>
+                {queries.map((q) => (
+                  <div className="doc-row" key={q.id}>
+                    <span className="doc-row__icon" aria-hidden>
+                      <ChatCircleDots size={ICON_INLINE} weight={ICON_WEIGHT} color="var(--danger-text)" />
+                    </span>
+                    <div className="grow">
+                      <h4>{q.subject}</h4>
+                      <p className="secondary text-sm">{q.messages[0]?.body}</p>
+                    </div>
+                    <Link to={`/cases/${app.id}`} className="btn btn--primary btn--sm nowrap">Reply</Link>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {docs.length > 0 && (
+            <div className="region">
+              <div className="between wrap" style={{ alignItems: 'flex-start', gap: 'var(--sp-4)' }}>
+                <div>
+                  <h3>Documents</h3>
+                  <p className="secondary text-sm" style={{ marginTop: 3 }}>
+                    One good version is enough. We&apos;ll tell you what&apos;s missing.
+                  </p>
+                </div>
+                <div className="row-tight wrap">
+                  {/* The action that was missing entirely: brokers were retyping
+                      our document list into WhatsApp by hand. */}
+                  <Button size="sm" variant="secondary" icon={<WhatsappLogo size={ICON_PILL} weight={ICON_WEIGHT} aria-hidden />}>
+                    Send list to client
+                  </Button>
+                  <Button size="sm" icon={<UploadSimple size={ICON_PILL} weight="bold" aria-hidden />}>
+                    Upload document
+                  </Button>
+                </div>
+              </div>
+
+              <div className="list" style={{ marginTop: 'var(--sp-4)' }}>
+                {docs.map((d) => {
+                  const done = received[`${app.id}-${d.id}`]
+                  return (
+                    <div className="doc-row" key={d.id}>
+                      <span className="doc-row__icon" aria-hidden>
+                        <FileText size={ICON_INLINE} weight={ICON_WEIGHT} />
+                      </span>
+                      <div className="grow">
+                        <h4>{d.name}</h4>
+                        <p className="secondary text-sm">
+                          {d.rejection ? d.rejection.reason : 'Required to submit the case'}
+                        </p>
+                        {d.rejection && (
+                          <p className="text-sm" style={{ marginTop: 4 }}>
+                            <strong>Send instead:</strong>{' '}
+                            <span className="secondary">{d.rejection.example}</span>
+                          </p>
+                        )}
+                      </div>
+                      <div className="row-tight">
+                        {done ? (
+                          <Pill tone="pill--done"><Check size={ICON_PILL} weight="bold" aria-hidden /> Received</Pill>
+                        ) : (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => setReceived((r) => ({ ...r, [`${app.id}-${d.id}`]: true }))}
+                            >
+                              Mark received
+                            </Button>
+                            <Pill tone={docStatusPill[d.status]} noDot>{statusWord[d.status]}</Pill>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </section>
+      ))}
 
       {expiring.length > 0 && (
-        <section aria-labelledby="expiring">
-          <h2 id="expiring" style={{ marginBottom: 'var(--sp-3)' }}>Expiring soon</h2>
-          <div className="list">
+        <section className="card" aria-labelledby="expiring">
+          <h2 id="expiring">Expiring soon</h2>
+          <p className="secondary text-sm" style={{ marginTop: 4 }}>
+            A document that expires mid-assessment restarts the clock.
+          </p>
+          <div className="list" style={{ marginTop: 'var(--sp-4)' }}>
             {expiring.map(({ app, doc }) => (
-              <Link key={`${app.id}-${doc.id}`} to={`/cases/${app.id}`} className="line">
-                <CalendarX size={17} weight={ICON_WEIGHT} color="var(--warning)" aria-hidden />
-                <span className="grow">
-                  <span className="semibold">{app.company}</span>{' '}
-                  <span className="secondary text-sm">— {doc.name}</span>
+              <Link key={`${app.id}-${doc.id}`} to={`/cases/${app.id}`} className="doc-row doc-row--link">
+                <span className="doc-row__icon" aria-hidden>
+                  <CalendarX size={ICON_INLINE} weight={ICON_WEIGHT} color="var(--warning)" />
                 </span>
+                <div className="grow">
+                  <h4>{app.company}</h4>
+                  <p className="secondary text-sm">{doc.name}</p>
+                </div>
                 <Clock tone="soon">{plural(doc.expiresInDays!, 'day')}</Clock>
-                <CaretRight size={14} weight="bold" aria-hidden />
               </Link>
             ))}
           </div>

@@ -9,7 +9,9 @@ import {
   docStatusLabel, docStatusPill, ownerLabel, ownerPill, partA, productLabel, stageLabel,
 } from '../lib/domain'
 import { aed, countdown, longDate, pct, plural } from '../lib/format'
-import { Button, Callout, Chip, Clock, EmptyState, ICON_WEIGHT, Pill } from '../components/ui'
+import {
+  Button, Callout, Chip, Clock, EmptyState, ICON_EMPTY, ICON_INLINE, ICON_PILL, ICON_ROW, ICON_WEIGHT, Pill,
+} from '../components/ui'
 import type { Application, Stage } from '../lib/types'
 
 type Tab = 'overview' | 'documents' | 'queries' | 'offer'
@@ -82,10 +84,10 @@ export function ApplicationDetail() {
       <div className="page">
         <div className="card">
           <EmptyState
-            icon={<XCircle size={28} weight={ICON_WEIGHT} />}
+            icon={<XCircle size={ICON_EMPTY} weight={ICON_WEIGHT} />}
             title="That case is not on your book"
             body="It may have been reassigned, or the link may be out of date. Your live cases are all on your cases list."
-            action={<Link to="/cases" className="btn btn--primary">Back to my cases</Link>}
+            action={<Link to="/cases" className="btn btn--primary">Back to cases</Link>}
           />
         </div>
       </div>
@@ -114,8 +116,8 @@ export function ApplicationDetail() {
   return (
     <div className="page">
       <div className="row" style={{ alignItems: 'flex-start' }}>
-        <Link to="/cases" className="btn-icon" aria-label="Back to my cases">
-          <ArrowLeft size={18} weight="bold" aria-hidden />
+        <Link to="/cases" className="btn-icon" aria-label="Back to cases">
+          <ArrowLeft size={ICON_INLINE} weight="bold" aria-hidden />
         </Link>
         <div className="grow">
           <h1>{a.company}</h1>
@@ -152,7 +154,7 @@ export function ApplicationDetail() {
             {a.decline && (
               <section className="card" style={{ borderColor: 'var(--danger-line)', background: 'var(--danger-soft)' }}>
                 <div className="row" style={{ alignItems: 'flex-start' }}>
-                  <Chip tone="danger"><XCircle size={20} weight={ICON_WEIGHT} /></Chip>
+                  <Chip tone="danger"><XCircle size={ICON_ROW} weight={ICON_WEIGHT} /></Chip>
                   <div className="grow">
                     <h2>Not approved</h2>
                     <p className="secondary text-sm" style={{ marginTop: 4 }}>{a.decline.category}</p>
@@ -167,11 +169,11 @@ export function ApplicationDetail() {
                   <div className="inset" style={{ marginTop: 'var(--sp-3)' }}>
                     <p className="text-sm">“{a.decline.tellClient}”</p>
                     <div className="row-tight" style={{ marginTop: 'var(--sp-3)' }}>
-                      <Button size="sm" icon={<Copy size={15} weight={ICON_WEIGHT} aria-hidden />}
+                      <Button size="sm" icon={<Copy size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden />}
                               onClick={() => navigator.clipboard?.writeText(a.decline!.tellClient).catch(() => {})}>
                         Copy
                       </Button>
-                      <Button size="sm" variant="secondary" icon={<WhatsappLogo size={15} weight={ICON_WEIGHT} aria-hidden />}>
+                      <Button size="sm" variant="secondary" icon={<WhatsappLogo size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden />}>
                         Share on WhatsApp
                       </Button>
                     </div>
@@ -182,7 +184,7 @@ export function ApplicationDetail() {
                   <ul style={{ display: 'grid', gap: 'var(--sp-2)', marginTop: 'var(--sp-3)' }}>
                     {a.decline.improve.map((s) => (
                       <li key={s} className="row-tight text-sm secondary" style={{ gap: 'var(--sp-2)' }}>
-                        <Check size={15} weight="bold" color="var(--success)" aria-hidden /> {s}
+                        <Check size={ICON_INLINE} weight="bold" color="var(--success)" aria-hidden /> {s}
                       </li>
                     ))}
                   </ul>
@@ -202,8 +204,8 @@ export function ApplicationDetail() {
                   return (
                     <div className="track__step" key={step.key} data-state={state}>
                       <span className="track__node" aria-hidden>
-                        {state === 'done' ? <Check size={14} weight="bold" />
-                          : state === 'blocked' ? <XCircle size={15} weight="bold" />
+                        {state === 'done' ? <Check size={ICON_PILL} weight="bold" />
+                          : state === 'blocked' ? <XCircle size={ICON_INLINE} weight="bold" />
                           : i + 1}
                       </span>
                       <div>
@@ -219,11 +221,11 @@ export function ApplicationDetail() {
                             <p className="text-sm" style={{ marginTop: 6 }}>“{line}”</p>
                             <div className="row-tight wrap" style={{ marginTop: 'var(--sp-3)' }}>
                               <Button size="sm" onClick={copyLine}
-                                      icon={copied ? <Check size={15} weight="bold" aria-hidden /> : <Copy size={15} weight={ICON_WEIGHT} aria-hidden />}>
+                                      icon={copied ? <Check size={ICON_INLINE} weight="bold" aria-hidden /> : <Copy size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden />}>
                                 {copied ? 'Copied' : 'Copy'}
                               </Button>
                               <Button size="sm" variant="secondary"
-                                      icon={<WhatsappLogo size={15} weight={ICON_WEIGHT} aria-hidden />}>
+                                      icon={<WhatsappLogo size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden />}>
                                 Share on WhatsApp
                               </Button>
                             </div>
@@ -263,7 +265,7 @@ export function ApplicationDetail() {
             <section className="card">
               <h3>Client contact</h3>
               <div className="row" style={{ marginTop: 'var(--sp-4)' }}>
-                <Chip tone="primary"><Phone size={18} weight={ICON_WEIGHT} /></Chip>
+                <Chip tone="primary"><Phone size={ICON_INLINE} weight={ICON_WEIGHT} /></Chip>
                 <div className="grow">
                   <h4>{a.contactName}</h4>
                   <p className="secondary text-sm">{a.contactPhone}</p>
@@ -279,7 +281,7 @@ export function ApplicationDetail() {
             {a.protectedUntil && (
               <section className="card">
                 <div className="row">
-                  <Chip tone="primary"><ShieldCheck size={18} weight={ICON_WEIGHT} /></Chip>
+                  <Chip tone="primary"><ShieldCheck size={ICON_INLINE} weight={ICON_WEIGHT} /></Chip>
                   <div className="grow">
                     <h4>Case protected</h4>
                     <p className="secondary text-sm">Until {longDate(a.protectedUntil)}</p>
@@ -308,7 +310,7 @@ export function ApplicationDetail() {
                 </div>
               </div>
               <div className="row-tight" style={{ marginTop: 'var(--sp-4)' }}>
-                <Button size="sm" variant="secondary" block icon={<WhatsappLogo size={15} weight={ICON_WEIGHT} aria-hidden />}>
+                <Button size="sm" variant="secondary" block icon={<WhatsappLogo size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden />}>
                   WhatsApp Sara
                 </Button>
               </div>
@@ -329,7 +331,7 @@ export function ApplicationDetail() {
                   {docsBad.length > 0 && <> · <strong style={{ color: 'var(--danger-text)' }}>{plural(docsBad.length, 'item')} needs replacing</strong></>}
                 </p>
               </div>
-              <Button size="sm" variant="secondary" icon={<Paperclip size={15} weight={ICON_WEIGHT} aria-hidden />}>
+              <Button size="sm" variant="secondary" icon={<Paperclip size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden />}>
                 Upload files
               </Button>
             </div>
@@ -343,7 +345,7 @@ export function ApplicationDetail() {
           {a.documents.length === 0 ? (
             <div className="card">
               <EmptyState
-                icon={<Paperclip size={28} weight={ICON_WEIGHT} />}
+                icon={<Paperclip size={ICON_EMPTY} weight={ICON_WEIGHT} />}
                 title="No documents on this case yet"
                 body="Once the client uploads, each file appears here with its verification status and anything we extracted from it."
               />
@@ -366,13 +368,13 @@ export function ApplicationDetail() {
 
                           {d.insight && (
                             <p className="row-tight text-sm" style={{ gap: 6, marginTop: 'var(--sp-2)', color: 'var(--primary-text)' }}>
-                              <Sparkle size={14} weight="fill" aria-hidden /> {d.insight}
+                              <Sparkle size={ICON_PILL} weight="fill" aria-hidden /> {d.insight}
                             </p>
                           )}
 
                           {d.expiresInDays !== undefined && d.expiresInDays < 60 && (
                             <p className="row-tight text-sm" style={{ gap: 6, marginTop: 'var(--sp-2)', color: 'var(--warning)' }}>
-                              <CalendarX size={14} weight={ICON_WEIGHT} aria-hidden /> Expires in {plural(d.expiresInDays, 'day')}
+                              <CalendarX size={ICON_PILL} weight={ICON_WEIGHT} aria-hidden /> Expires in {plural(d.expiresInDays, 'day')}
                             </p>
                           )}
 
@@ -390,7 +392,7 @@ export function ApplicationDetail() {
                           <Pill tone={docStatusPill[d.status]}>{docStatusLabel[d.status]}</Pill>
                           {(d.status === 'pending' || d.status === 'rejected' || d.status === 'replacement_required') && (
                             <Button size="sm" variant={d.status === 'pending' ? 'primary' : 'secondary'}
-                                    icon={d.status === 'pending' ? undefined : <ArrowClockwise size={14} weight="bold" aria-hidden />}>
+                                    icon={d.status === 'pending' ? undefined : <ArrowClockwise size={ICON_PILL} weight="bold" aria-hidden />}>
                               {d.status === 'pending' ? 'Upload' : 'Replace'}
                             </Button>
                           )}
@@ -416,7 +418,7 @@ export function ApplicationDetail() {
           {a.queries.length === 0 ? (
             <div className="card">
               <EmptyState
-                icon={<ChatCircleDots size={28} weight={ICON_WEIGHT} />}
+                icon={<ChatCircleDots size={ICON_EMPTY} weight={ICON_WEIGHT} />}
                 title="No open queries"
                 body="If credit needs something specific, it appears here with a deadline and everything they already told us. You will get an email the moment one is raised."
               />
@@ -427,7 +429,7 @@ export function ApplicationDetail() {
                 <div className="between wrap" style={{ alignItems: 'flex-start' }}>
                   <div className="row" style={{ alignItems: 'flex-start' }}>
                     <Chip tone={q.resolved ? 'success' : 'danger'}>
-                      {q.resolved ? <Check size={19} weight="bold" /> : <Warning size={19} weight={ICON_WEIGHT} />}
+                      {q.resolved ? <Check size={ICON_ROW} weight="bold" /> : <Warning size={ICON_ROW} weight={ICON_WEIGHT} />}
                     </Chip>
                     <div>
                       <h2>{q.subject}</h2>
@@ -480,7 +482,7 @@ export function ApplicationDetail() {
                       >
                         Send reply
                       </Button>
-                      <Button size="sm" variant="secondary" icon={<Paperclip size={15} weight={ICON_WEIGHT} aria-hidden />}>
+                      <Button size="sm" variant="secondary" icon={<Paperclip size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden />}>
                         Attach a document
                       </Button>
                     </div>
@@ -498,7 +500,7 @@ export function ApplicationDetail() {
           {!a.offer ? (
             <div className="card">
               <EmptyState
-                icon={<ArrowUpRight size={28} weight={ICON_WEIGHT} />}
+                icon={<ArrowUpRight size={ICON_EMPTY} weight={ICON_WEIGHT} />}
                 title="No offer yet"
                 body={`This case is at “${stageLabel[a.stage]}”. Once credit issues an offer you will see the amount, the fee, your commission and a signing link to send your client.`}
               />
@@ -531,7 +533,7 @@ export function ApplicationDetail() {
                     <ul style={{ display: 'grid', gap: 'var(--sp-2)', marginTop: 'var(--sp-3)' }}>
                       {a.offer.conditions.map((c) => (
                         <li key={c} className="row-tight text-sm secondary" style={{ gap: 'var(--sp-2)' }}>
-                          <Check size={15} weight="bold" color="var(--text-muted)" aria-hidden /> {c}
+                          <Check size={ICON_INLINE} weight="bold" color="var(--text-muted)" aria-hidden /> {c}
                         </li>
                       ))}
                     </ul>
@@ -557,11 +559,11 @@ export function ApplicationDetail() {
                     <>
                       <ol style={{ display: 'grid', gap: 'var(--sp-3)', marginTop: 'var(--sp-4)' }}>
                         <li className="row-tight text-sm" style={{ gap: 'var(--sp-2)' }}>
-                          <Check size={15} weight="bold" color="var(--success)" aria-hidden /> Link sent
+                          <Check size={ICON_INLINE} weight="bold" color="var(--success)" aria-hidden /> Link sent
                         </li>
                         <li className="row-tight text-sm" style={{ gap: 'var(--sp-2)' }}>
                           {a.offer.clientViewedAt
-                            ? <><Check size={15} weight="bold" color="var(--success)" aria-hidden /> Client opened it {longDate(a.offer.clientViewedAt)}</>
+                            ? <><Check size={ICON_INLINE} weight="bold" color="var(--success)" aria-hidden /> Client opened it {longDate(a.offer.clientViewedAt)}</>
                             : <><span aria-hidden style={{ width: 15 }} /> <span className="muted">Not opened yet</span></>}
                         </li>
                         <li className="row-tight text-sm" style={{ gap: 'var(--sp-2)' }}>
@@ -569,11 +571,11 @@ export function ApplicationDetail() {
                         </li>
                       </ol>
                       <div style={{ marginTop: 'var(--sp-5)', display: 'grid', gap: 'var(--sp-2)' }}>
-                        <Button size="sm" block icon={<WhatsappLogo size={15} weight={ICON_WEIGHT} aria-hidden />}>
+                        <Button size="sm" block icon={<WhatsappLogo size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden />}>
                           Send link on WhatsApp
                         </Button>
                         <Button size="sm" variant="secondary" block
-                                icon={<Copy size={15} weight={ICON_WEIGHT} aria-hidden />}
+                                icon={<Copy size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden />}
                                 onClick={() => navigator.clipboard?.writeText(a.offer!.shareLink ?? '').catch(() => {})}>
                           Copy signing link
                         </Button>

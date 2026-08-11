@@ -6,7 +6,7 @@ import {
 } from '@phosphor-icons/react'
 import { broker, actionRequired, liveApplications, clients, notifications } from '../lib/data'
 import { tiers } from '../lib/domain'
-import { IconButton, ICON_WEIGHT } from './ui'
+import { IconButton, ICON_INLINE, ICON_PILL, ICON_ROW, ICON_WEIGHT } from './ui'
 import { ThemeToggle } from './ThemeToggle'
 
 const openQueries = liveApplications.flatMap((a) => a.queries).filter((q) => !q.resolved).length
@@ -17,8 +17,8 @@ const unread = notifications.filter((n) => !n.read).length
 const nav = [
   { to: '/', label: 'Dashboard', icon: House, end: true },
   { to: '/new-case', label: 'New case', icon: FilePlus },
-  { to: '/cases', label: 'My cases', icon: Rows, count: liveApplications.length },
-  { to: '/clients', label: 'My clients', icon: UsersThree, count: clients.length },
+  { to: '/cases', label: 'Cases', icon: Rows, count: liveApplications.length },
+  { to: '/funded', label: 'Funded', icon: UsersThree, count: clients.length },
   { to: '/documents', label: 'Documents & queries', icon: Files, count: openQueries + docsNeedingAction, urgent: true },
   { to: '/offers', label: 'Offers', icon: Receipt, count: liveApplications.filter((a) => a.offer && !a.offer.signedAt).length },
   { to: '/commissions', label: 'Commissions', icon: CurrencyDollar },
@@ -55,14 +55,14 @@ export function AppShell() {
             <span className="brand__mark" aria-hidden="true" />
           </a>
           <IconButton label="Close menu" plain onClick={() => setOpen(false)} className="sidebar-toggle">
-            <X size={20} weight={ICON_WEIGHT} />
+            <X size={ICON_ROW} weight={ICON_WEIGHT} />
           </IconButton>
         </div>
 
         <div className="sidebar__scroll">
           <div className="sidebar__cta">
             <button className="btn btn--primary btn--block" onClick={() => navigate('/new-case')}>
-              <FilePlus size={18} weight="bold" aria-hidden /> New case
+              <FilePlus size={ICON_INLINE} weight="bold" aria-hidden /> New case
             </button>
           </div>
 
@@ -71,7 +71,7 @@ export function AppShell() {
               <NavLink key={to} to={to} end={end} className="nav__item">
                 {({ isActive }) => (
                   <>
-                    <Icon size={20} weight={isActive ? 'fill' : ICON_WEIGHT} aria-hidden />
+                    <Icon size={ICON_ROW} weight={isActive ? 'fill' : ICON_WEIGHT} aria-hidden />
                     <span>{label}</span>
                     {count ? (
                       <span className="nav__count" data-urgent={urgent && count > 0 ? 'true' : undefined}>
@@ -87,11 +87,11 @@ export function AppShell() {
           <nav className="nav sidebar__foot" aria-label="Account">
             <NavLink to="/settings" className="nav__item">
               {({ isActive }) => (
-                <><Gear size={20} weight={isActive ? 'fill' : ICON_WEIGHT} aria-hidden /><span>Profile &amp; settings</span></>
+                <><Gear size={ICON_ROW} weight={isActive ? 'fill' : ICON_WEIGHT} aria-hidden /><span>Profile &amp; settings</span></>
               )}
             </NavLink>
             <NavLink to="/login" className="nav__item">
-              <SignOut size={20} weight={ICON_WEIGHT} aria-hidden /><span>Log out</span>
+              <SignOut size={ICON_ROW} weight={ICON_WEIGHT} aria-hidden /><span>Log out</span>
             </NavLink>
           </nav>
         </div>
@@ -100,21 +100,21 @@ export function AppShell() {
       <div className="main">
         <div className="topbar">
           <IconButton label="Open menu" plain onClick={() => setOpen(true)} className="sidebar-toggle">
-            <List size={22} weight={ICON_WEIGHT} />
+            <List size={ICON_ROW} weight={ICON_WEIGHT} />
           </IconButton>
 
           <button className="btn btn--ghost btn--sm" onClick={() => navigate('/cases')}>
-            <MagnifyingGlass size={16} weight={ICON_WEIGHT} aria-hidden /> Search clients
+            <MagnifyingGlass size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden /> Search clients
           </button>
 
           <div className="push row-tight">
             <span className="pill pill--gold" title={`${tier.label} partner`}>
-              <Medal size={13} weight="fill" aria-hidden /> {tier.label}
+              <Medal size={ICON_PILL} weight="fill" aria-hidden /> {tier.label}
             </span>
             <ThemeToggle />
             <IconButton label={`Notifications, ${unread} unread`} plain onClick={() => navigate('/notifications')}>
               <span style={{ position: 'relative', display: 'grid', placeItems: 'center' }}>
-                <Bell size={20} weight={ICON_WEIGHT} />
+                <Bell size={ICON_ROW} weight={ICON_WEIGHT} />
                 {unread > 0 && (
                   <span
                     aria-hidden

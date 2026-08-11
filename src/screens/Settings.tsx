@@ -3,7 +3,9 @@ import { Bell, EnvelopeSimple, WhatsappLogo, ShieldCheck, Medal } from '@phospho
 import { broker } from '../lib/data'
 import { tiers } from '../lib/domain'
 import { aed, longDate } from '../lib/format'
-import { Button, Callout, Chip, Field, ICON_WEIGHT, PageHead, Pill, SectionHead } from '../components/ui'
+import {
+  Button, Callout, Chip, Field, ICON_INLINE, ICON_PILL, ICON_ROW, ICON_WEIGHT, PageHead, Pill, SectionHead,
+} from '../components/ui'
 
 const tier = tiers[broker.tier]
 
@@ -30,7 +32,7 @@ export function Settings() {
 
       <section className="card">
         <div className="row" style={{ alignItems: 'flex-start' }}>
-          <Chip tone="gold"><Medal size={20} weight="fill" /></Chip>
+          <Chip tone="gold"><Medal size={ICON_ROW} weight="fill" /></Chip>
           <div className="grow">
             <h2>{tier.label} partner</h2>
             <p className="secondary text-sm" style={{ marginTop: 4 }}>
@@ -85,7 +87,7 @@ export function Settings() {
                     <p className="secondary text-sm">{p.body}</p>
                     {p.locked && (
                       <p className="text-xs muted row-tight" style={{ gap: 5, marginTop: 4 }}>
-                        <ShieldCheck size={13} weight={ICON_WEIGHT} aria-hidden /> Always on — this is the only channel
+                        <ShieldCheck size={ICON_PILL} weight={ICON_WEIGHT} aria-hidden /> Always on — this is the only channel
                         that reaches you in time
                       </p>
                     )}
@@ -102,7 +104,7 @@ export function Settings() {
                             disabled={p.locked || k === 'inApp'}
                             onChange={() => toggle(p.id, k)}
                           />
-                          <Icon size={16} weight={ICON_WEIGHT} aria-hidden />
+                          <Icon size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden />
                           <span className="sr-only">{label} for {p.label}</span>
                         </label>
                       </td>

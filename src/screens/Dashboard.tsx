@@ -8,7 +8,7 @@ import { applications, broker, clients, commissionPaid, dealsPaid, payable, expe
 import { partB, tiers, stageGroups } from '../lib/domain'
 import { aed, plural } from '../lib/format'
 import {
-  Button, Chip, Clock, Donut, EmptyState, ICON_WEIGHT, PageHead, SectionHead, StatStrip,
+  Button, Chip, Clock, Donut, EmptyState, ICON_EMPTY, ICON_INLINE, ICON_PILL, ICON_ROW, ICON_WEIGHT, PageHead, SectionHead, StatStrip,
 } from '../components/ui'
 
 const tier = tiers[broker.tier]
@@ -48,7 +48,7 @@ export function Dashboard() {
         title={`Good morning, ${broker.name.split(' ')[0]}`}
         meta={`${broker.company} · ${tier.label} partner`}
         actions={
-          <Button icon={<FilePlus size={18} weight="bold" aria-hidden />} onClick={() => navigate('/new-case')}>
+          <Button icon={<FilePlus size={ICON_INLINE} weight="bold" aria-hidden />} onClick={() => navigate('/new-case')}>
             New case
           </Button>
         }
@@ -104,7 +104,7 @@ export function Dashboard() {
           <section className="card" aria-labelledby="topups" style={{ height: '100%' }}>
             <div className="between wrap" style={{ alignItems: 'baseline' }}>
               <h2 id="topups">Ready for a top-up</h2>
-              <Link to="/clients" className="text-sm semibold">All clients</Link>
+              <Link to="/funded" className="text-sm semibold">All funded</Link>
             </div>
 
             {topUpReady.length > 0 ? (
@@ -114,13 +114,13 @@ export function Dashboard() {
                 </p>
                 <div style={{ marginTop: 'var(--sp-4)' }}>
                   {topUpReady.map((c) => (
-                    <Link key={c.id} to="/clients" className="task-line">
-                      <TrendUp size={19} weight={ICON_WEIGHT} className="task-line__icon" color="var(--success-ink)" aria-hidden />
+                    <Link key={c.id} to="/funded" className="task-line">
+                      <TrendUp size={ICON_ROW} weight={ICON_WEIGHT} className="task-line__icon" color="var(--success-ink)" aria-hidden />
                       <span className="grow">
                         <span className="task-line__title" style={{ display: 'block' }}>{c.company}</span>
                         <span className="task-line__meta">{c.repaidPct}% repaid on {aed(c.totalDisbursed)}</span>
                       </span>
-                      <CaretRight size={15} weight="bold" aria-hidden style={{ marginTop: 4, flex: '0 0 auto' }} />
+                      <CaretRight size={ICON_INLINE} weight="bold" aria-hidden style={{ marginTop: 4, flex: '0 0 auto' }} />
                     </Link>
                   ))}
                 </div>
@@ -147,7 +147,7 @@ export function Dashboard() {
             {tasks.map((t) => (
               <li key={t.id}>
                 <Link to={`/cases/${t.id}`} className="item item--link" style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <Chip tone={t.urgent ? 'warning' : 'neutral'}><t.icon size={19} weight={ICON_WEIGHT} /></Chip>
+                  <Chip tone={t.urgent ? 'warning' : 'neutral'}><t.icon size={ICON_ROW} weight={ICON_WEIGHT} /></Chip>
                   <div className="grow">
                     <h3 style={{ fontSize: 'var(--text-h4)' }}>{t.title}</h3>
                     <p className="secondary text-sm">{t.body}</p>
@@ -155,7 +155,7 @@ export function Dashboard() {
                   <div className="item__actions">
                     <Clock tone={t.urgent ? 'soon' : 'calm'}>{t.clock}</Clock>
                     <span className="btn btn--secondary btn--sm nowrap">
-                      {t.cta} <CaretRight size={14} weight="bold" aria-hidden />
+                      {t.cta} <CaretRight size={ICON_PILL} weight="bold" aria-hidden />
                     </span>
                   </div>
                 </Link>
@@ -166,7 +166,7 @@ export function Dashboard() {
       ) : (
         <section className="card">
           <EmptyState
-            icon={<CheckCircle size={30} weight={ICON_WEIGHT} />}
+            icon={<CheckCircle size={ICON_EMPTY} weight={ICON_WEIGHT} />}
             title="Nothing waiting on you"
             body="Every live case is with your client or with us."
             action={<Button variant="secondary" onClick={() => navigate('/cases')}>View pipeline</Button>}
@@ -233,7 +233,7 @@ export function Dashboard() {
                               ? aed(a.disbursedAmount ?? a.offer?.amount ?? a.requestedAmount ?? 0)
                               : '—'}
                           </span>
-                          <CaretRight size={14} weight="bold" aria-hidden />
+                          <CaretRight size={ICON_PILL} weight="bold" aria-hidden />
                         </Link>
                       ))
                     )}

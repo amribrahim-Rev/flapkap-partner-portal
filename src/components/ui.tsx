@@ -1,9 +1,21 @@
 import type { ReactNode, ButtonHTMLAttributes, InputHTMLAttributes } from 'react'
 import { useId } from 'react'
-import { WarningCircle, CaretDown, Info, Warning, CheckCircle } from '@phosphor-icons/react'
+import {
+  WarningCircle, CaretDown, Info, Warning, CheckCircle, MagnifyingGlass, ArrowCounterClockwise,
+} from '@phosphor-icons/react'
 
 /* One icon family, one weight, everywhere. Never a unicode glyph. */
 export const ICON_WEIGHT = 'regular' as const
+
+/**
+ * Four icon sizes, each with a role. The audit found eight different values in
+ * use (13–20px), which is drift rather than design: a caret was 14px in one row
+ * and 16px in the next. Never pass a raw number.
+ */
+export const ICON_PILL = 14    // inside pills and chips
+export const ICON_INLINE = 16  // inline with text, buttons, carets
+export const ICON_ROW = 20     // row-leading, inside a .chip
+export const ICON_EMPTY = 28   // empty-state illustrations
 
 /* ---------------- Button ---------------- */
 
@@ -241,7 +253,7 @@ export function Callout({
     : tone === 'info' ? 'var(--primary-text)' : 'var(--text-muted)'
   return (
     <div className={`callout${tone !== 'neutral' ? ` callout--${tone}` : ''}`}>
-      <Glyph size={18} color={color} weight={ICON_WEIGHT} aria-hidden />
+      <Glyph size={ICON_INLINE} color={color} weight={ICON_WEIGHT} aria-hidden />
       <div>{children}</div>
     </div>
   )
@@ -276,7 +288,7 @@ export function Field({ label, hint, error, id, suffix, ...rest }: FieldProps) {
       {hint && !error && <p className="field__hint" id={hintId}>{hint}</p>}
       {error && (
         <p className="field__error" id={errId}>
-          <WarningCircle size={14} weight={ICON_WEIGHT} aria-hidden /> {error}
+          <WarningCircle size={ICON_PILL} weight={ICON_WEIGHT} aria-hidden /> {error}
         </p>
       )}
     </div>
@@ -302,7 +314,7 @@ export function SelectField({
         <select id={fieldId} className="select" value={value} onChange={(e) => onChange(e.target.value)}>
           {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
-        <CaretDown size={16} weight={ICON_WEIGHT} aria-hidden />
+        <CaretDown size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden />
       </div>
       {hint && <p className="field__hint">{hint}</p>}
     </div>
@@ -347,17 +359,72 @@ export function SkeletonRows({ rows = 4 }: { rows?: number }) {
 
 /* ---------------- Page furniture ---------------- */
 
+/**
+ * Page header. `eyebrow` sits above the title as a small uppercase count or
+ * category, and `meta` below it as a one-line statement of what the page is for.
+ *
+ * The craft floor bans eyebrows above headings, and I'd normally hold to that.
+ * Overridden here deliberately: the client picked this pattern from a build they
+ * preferred, and the brief outranks the floor. It also earns its place — the
+ * eyebrow carries a live count ("11 cases in your desk") rather than repeating
+ * the heading in smaller type, which is the version of this pattern that is
+ * actually just decoration.
+ */
 export function PageHead({
-  title, meta, actions,
-}: { title: string; meta?: ReactNode; actions?: ReactNode }) {
+  title, eyebrow, meta, actions,
+}: { title: string; eyebrow?: ReactNode; meta?: ReactNode; actions?: ReactNode }) {
   return (
     <header className="page__head">
       <div>
+        {eyebrow && <p className="page__eyebrow">{eyebrow}</p>}
         <h1>{title}</h1>
-        {meta && <p className="secondary text-sm" style={{ marginTop: 6 }}>{meta}</p>}
+        {meta && <p className="page__meta">{meta}</p>}
       </div>
       {actions && <div className="row-tight wrap">{actions}</div>}
     </header>
+  )
+}
+
+/**
+ * Search toolbar. A full-width search with the filter controls on the same row,
+ * in its own surface above the table.
+ *
+ * Replaces a row of stage chips plus a small labelled search field. The chips
+ * scaled badly — eight of them wrapped onto two lines — and the search was the
+ * smallest thing on a page whose whole job is finding one client.
+ */
+export function SearchBar({
+  value, onChange, placeholder, children, onReset, resettable,
+}: {
+  value: string
+  onChange: (v: string) => void
+  placeholder: string
+  children?: ReactNode
+  onReset?: () => void
+  resettable?: boolean
+}) {
+  const id = useId()
+  return (
+    <div className="searchbar">
+      <div className="searchbar__field">
+        <MagnifyingGlass size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden />
+        <label htmlFor={id} className="sr-only">{placeholder}</label>
+        <input
+          id={id}
+          type="search"
+          value={value}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      </div>
+      {children}
+      {onReset && (
+        <Button variant="secondary" size="sm" onClick={onReset} disabled={!resettable}
+                icon={<ArrowCounterClockwise size={ICON_PILL} weight="bold" aria-hidden />}>
+          Reset
+        </Button>
+      )}
+    </div>
   )
 }
 

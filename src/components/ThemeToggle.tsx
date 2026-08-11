@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Sun, Moon } from '@phosphor-icons/react'
-import { IconButton, ICON_WEIGHT } from './ui'
+import { IconButton, ICON_ROW, ICON_WEIGHT } from './ui'
 
 export type Theme = 'dark' | 'light'
 
@@ -41,8 +41,8 @@ export function ThemeToggle() {
       aria-pressed={theme === 'light'}
     >
       {theme === 'dark'
-        ? <Sun size={20} weight={ICON_WEIGHT} />
-        : <Moon size={20} weight={ICON_WEIGHT} />}
+        ? <Sun size={ICON_ROW} weight={ICON_WEIGHT} />
+        : <Moon size={ICON_ROW} weight={ICON_WEIGHT} />}
     </IconButton>
   )
 }

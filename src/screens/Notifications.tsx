@@ -2,7 +2,9 @@ import { Link } from 'react-router-dom'
 import { BellSlash, EnvelopeSimple, WhatsappLogo, Bell, CaretRight } from '@phosphor-icons/react'
 import { notifications } from '../lib/data'
 import { longDate } from '../lib/format'
-import { Callout, Chip, EmptyState, ICON_WEIGHT, PageHead, Pill } from '../components/ui'
+import {
+  Callout, Chip, EmptyState, ICON_EMPTY, ICON_INLINE, ICON_PILL, ICON_WEIGHT, PageHead, Pill,
+} from '../components/ui'
 
 const channelIcon = { in_app: Bell, email: EnvelopeSimple, whatsapp: WhatsappLogo } as const
 const channelName = { in_app: 'In-app', email: 'Email', whatsapp: 'WhatsApp' } as const
@@ -20,7 +22,7 @@ export function Notifications() {
       {notifications.length === 0 ? (
         <div className="card">
           <EmptyState
-            icon={<BellSlash size={28} weight={ICON_WEIGHT} />}
+            icon={<BellSlash size={ICON_EMPTY} weight={ICON_WEIGHT} />}
             title="Nothing to report"
             body="Stage changes, decisions, document rejections and commission payments all land here."
           />
@@ -31,7 +33,7 @@ export function Notifications() {
             const tone = n.tone === 'danger' ? 'danger' : n.tone === 'warning' ? 'warning' : n.tone === 'success' ? 'success' : 'primary'
             const Body = (
               <>
-                <Chip tone={tone}><Bell size={18} weight={ICON_WEIGHT} /></Chip>
+                <Chip tone={tone}><Bell size={ICON_INLINE} weight={ICON_WEIGHT} /></Chip>
                 <div className="grow">
                   <div className="row-tight wrap" style={{ gap: 'var(--sp-2)' }}>
                     <h3 style={{ fontSize: 'var(--text-h4)' }}>{n.title}</h3>
@@ -44,14 +46,14 @@ export function Notifications() {
                       const Icon = channelIcon[c]
                       return (
                         <span key={c} className="muted text-xs row-tight" style={{ gap: 4 }} title={`Sent by ${channelName[c]}`}>
-                          <Icon size={13} weight={ICON_WEIGHT} aria-hidden />
+                          <Icon size={ICON_PILL} weight={ICON_WEIGHT} aria-hidden />
                           {channelName[c]}
                         </span>
                       )
                     })}
                   </div>
                 </div>
-                {n.href && <span className="btn-icon" aria-hidden><CaretRight size={16} weight="bold" /></span>}
+                {n.href && <span className="btn-icon" aria-hidden><CaretRight size={ICON_INLINE} weight="bold" /></span>}
               </>
             )
             return (

@@ -24,19 +24,27 @@ export const router = createHashRouter([
     children: [
       { index: true, element: <Dashboard /> },
       { path: 'new-case', element: <NewCase /> },
+      /* "Pipeline" and "Funded" replace "My cases" and "My clients": the old
+         pair never said how they differed, and "clients" implied everyone the
+         broker brought when it only ever meant the ones who funded. */
       { path: 'cases', element: <Applications /> },
       { path: 'cases/:id', element: <ApplicationDetail /> },
+      { path: 'funded', element: <Clients /> },
       { path: 'documents', element: <Documents /> },
       { path: 'offers', element: <Offers /> },
       { path: 'commissions', element: <Commissions /> },
-      { path: 'clients', element: <Clients /> },
       { path: 'notifications', element: <Notifications /> },
       { path: 'settings', element: <Settings /> },
       { path: 'reports', element: <Reports /> },
-      /* Old paths kept alive so a bookmarked link never dead-ends. */
+
+      /* Old paths stay alive so nothing anyone bookmarked or shared breaks. */
+      { path: 'pipeline', element: <Navigate to="/cases" replace /> },
+      
+      { path: 'clients', element: <Navigate to="/funded" replace /> },
       { path: 'applications', element: <Navigate to="/cases" replace /> },
       { path: 'new-lead', element: <Navigate to="/new-case" replace /> },
       { path: '*', element: <NotFound /> },
     ],
   },
 ])
+
