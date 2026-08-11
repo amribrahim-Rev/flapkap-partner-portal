@@ -4,18 +4,13 @@ import {
   ArrowRight, CaretRight,
 } from '@phosphor-icons/react'
 import { applications, broker, clients, commissionPaid, payable, expected } from '../lib/data'
-import { partB, stageGroups, tiers } from '../lib/domain'
+import { stageGroups } from '../lib/domain'
 import { aed, longDate, plural } from '../lib/format'
 import {
-  Button, Donut, EmptyState, ICON_EMPTY, ICON_INLINE, ICON_PILL, ICON_WEIGHT, PageHead, Pill,
+  Button, EmptyState, ICON_EMPTY, ICON_INLINE, ICON_PILL, ICON_WEIGHT, PageHead, Pill,
 } from '../components/ui'
+import { TierCard } from '../components/TierCard'
 
-const tier = tiers[broker.tier]
-const gap = Math.max(0, tier.quarterlyTarget - broker.quarter.disbursed)
-const bonus = partB(tier.quarterlyTarget, broker.tier)
-const daysLeft = Math.round(
-  (new Date(broker.quarter.endsOn).getTime() - new Date('2026-08-11').getTime()) / 86_400_000,
-)
 
 const payableTotal = payable.reduce((s, a) => s + (a.commission ?? 0), 0)
 const expectedTotal = expected.reduce((s, a) => s + (a.commission ?? 0), 0)
@@ -49,39 +44,12 @@ export function Dashboard() {
         }
       />
 
+      {/* The hero: tier, streak, ladder and the re-rate what-if. Replaces the
+           old target card — it covers the same ground and carries the one fact
+           that actually moves a broker. */}
+      <TierCard />
+
       <div className="overview">
-
-        {/* Quarterly target — figures left, ring right. */}
-        <section className="card card--xl" aria-labelledby="target">
-          <h2 id="target" className="micro">Quarterly target</h2>
-          <div className="row-tight wrap" style={{ marginTop: 'var(--sp-3)' }}>
-            <Pill tone="pill--gold">{tier.label} tier</Pill>
-            <span className="secondary text-sm">{broker.quarter.label}</span>
-          </div>
-
-          <div className="between wrap" style={{ alignItems: 'center', gap: 'var(--sp-5)', marginTop: 'var(--sp-5)' }}>
-            <div className="grow" style={{ minWidth: 190 }}>
-              <p className="wallet__balance" style={{ margin: 0 }}>
-                {aed(broker.quarter.disbursed)}
-                <small style={{ display: 'block' }}>of {aed(tier.quarterlyTarget)}</small>
-              </p>
-              <div className="bar" style={{ margin: 'var(--sp-4) 0 var(--sp-3)' }}>
-                <i style={{ width: `${(broker.quarter.disbursed / tier.quarterlyTarget) * 100}%` }} />
-              </div>
-              <p className="secondary text-sm">
-                {gap > 0
-                  ? <><strong style={{ color: 'var(--text)' }}>{aed(gap, { compact: true })}</strong> to your {aed(bonus)} bonus · {plural(daysLeft, 'day')} left</>
-                  : <>Bonus secured — {aed(bonus)}</>}
-              </p>
-            </div>
-            <Donut
-              value={broker.quarter.disbursed}
-              max={tier.quarterlyTarget}
-              caption="to target"
-              label={`${broker.quarter.label} disbursal against the ${tier.label} target`}
-            />
-          </div>
-        </section>
 
         {/* Waiting on you. */}
         <section className="card card--xl" aria-labelledby="waiting">

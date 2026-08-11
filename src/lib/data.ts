@@ -15,12 +15,14 @@ export const broker = {
   quarter: {
     label: 'Q3 2026',
     endsOn: '2026-09-30',
-    disbursed: 3_000_000,
+    disbursed: 4_900_000,
     months: [
       { label: 'Jul', disbursed: 2_600_000, status: 'hit' as const },
-      { label: 'Aug', disbursed: 400_000, status: 'behind' as const },
+      { label: 'Aug', disbursed: 2_300_000, status: 'hit' as const },
       { label: 'Sep', disbursed: 0, status: 'upcoming' as const },
     ],
+    /** Consecutive months at or above the monthly target. */
+    streakMonths: 4,
   },
   /** Quality score gating the tier bonus. Volume alone must not unlock it. */
   qualityScore: 78,

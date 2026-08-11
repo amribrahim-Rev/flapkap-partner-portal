@@ -109,6 +109,13 @@ export const tiers: Record<Tier, TierConfig> = {
 
 export const tierOrder: Tier[] = ['silver', 'gold', 'platinum']
 
+/** What each tier means, so the badge says something a broker can repeat. */
+export const tierNickname: Record<Tier, string> = {
+  silver: 'Emerging partner',
+  gold: 'Growth partner',
+  platinum: 'Premier partner',
+}
+
 /**
  * Part A — commission on a single deal.
  *
