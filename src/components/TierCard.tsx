@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Fire, Medal, Sparkle } from '@phosphor-icons/react'
-import { broker } from '../lib/data'
+import { Link } from 'react-router-dom'
+import { Fire, Medal, Sparkle, ArrowRight } from '@phosphor-icons/react'
+import { broker, clients } from '../lib/data'
 import { partB, tierNickname, tierOrder, tiers } from '../lib/domain'
 import { aed, plural } from '../lib/format'
 import { ICON_PILL, ICON_ROW } from './ui'
@@ -10,6 +11,10 @@ const nextKey = tierOrder[tierOrder.indexOf(broker.tier) + 1]
 const next = nextKey ? tiers[nextKey] : null
 
 const disbursed = broker.quarter.disbursed
+
+/* Clients who could take a top-up now, and the disbursal that represents. */
+const topUpReady = clients.filter((c) => c.topUpEligibleInDays === 0)
+const topUpPotential = topUpReady.reduce((s, c) => s + c.totalDisbursed, 0)
 const daysLeft = Math.round(
   (new Date(broker.quarter.endsOn).getTime() - new Date('2026-08-11').getTime()) / 86_400_000,
 )
@@ -84,19 +89,16 @@ export function TierCard() {
         </div>
       </div>
 
-      {/* Identity: the tier's own colour, its medal, and its name — not a bare
-          initial in the brand accent, which said nothing and read as a
-          mismatch on a Gold tier. */}
+      {/* Identity, carried by the tier's own colour and an inline medal. The
+          58px badge tile that used to sit here was a third gold object on one
+          card — the pill above already labels the tier. */}
       <div className="tier__id">
-        <span className="tier__badge" data-tier={broker.tier} aria-hidden>
-          <Medal size={ICON_ROW} weight="fill" />
-          <span className="tier__badge-letter">{tier.label}</span>
-        </span>
         <div>
           <p className="micro">Your tier</p>
-          <p className="tier__name">
+          <p className="tier__name row-tight" style={{ gap: 8 }}>
+            <Medal size={ICON_ROW} weight="fill" color="var(--gold)" aria-hidden />
             <span style={{ color: 'var(--gold-ink)' }}>{tier.label}</span>
-            <span className="secondary"> · {tierNickname[broker.tier]}</span>
+            <span className="secondary">· {tierNickname[broker.tier]}</span>
           </p>
           {broker.quarter.streakMonths > 1 && (
             <p className="text-sm secondary row-tight" style={{ gap: 5, marginTop: 2 }}>
@@ -172,6 +174,25 @@ export function TierCard() {
             <strong style={{ color: 'var(--text)' }}>{aed(atNextFull)}</strong> instead of {aed(atCurrent)}.
           </p>
         </div>
+      )}
+
+      {/* The shortest route to the gap. A target that only states a number is a
+          scoreboard; naming the cheapest available deals turns it into a plan —
+          and a top-up is the cheapest disbursal a broker can write. */}
+      {next && toGo > 0 && topUpReady.length > 0 && (
+        <Link to="/clients" className="tier__path">
+          <span className="grow">
+            <span className="tier__path-lead">
+              You have <strong>{plural(topUpReady.length, 'client')}</strong> ready for a top-up
+            </span>
+            <span className="tier__path-meta">
+              About {aed(topUpPotential, { compact: true })} of disbursal — that closes{' '}
+              <strong style={{ color: 'var(--success-ink) ' }}>{Math.round((topUpPotential / toGo) * 100)}%</strong>{' '}
+              of the {aed(toGo, { compact: true })} you need, from clients who already know FlapKap.
+            </span>
+          </span>
+          <ArrowRight size={ICON_PILL} weight="bold" aria-hidden />
+        </Link>
       )}
     </section>
   )

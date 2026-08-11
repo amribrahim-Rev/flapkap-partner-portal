@@ -14,6 +14,11 @@ import type { Application, DocumentItem, Query } from '../lib/types'
 /**
  * A client-first view: one card per client, everything they owe inside it.
  *
+ * Structure is deliberately shallow and repetitive — client, then a titled
+ * block per kind of thing, then plain rows. Two actions per block at most, and
+ * every clock sits on the row it belongs to rather than in the client header,
+ * which is what made an earlier version feel busy.
+ *
  * Status words are short and human rather than our internal vocabulary — a
  * broker reading "Replacement required" has to translate it; "Needs update"
  * they just understand.
@@ -75,7 +80,6 @@ export function Documents() {
       <PageHead
         eyebrow="Client files"
         title="Documents & queries"
-        meta="A client-first view of what is clean, missing and worth a nudge."
         actions={
           <span className="secondary text-sm">
             {plural(totalItems, 'item')} across {plural(groups.length, 'client')}
@@ -85,42 +89,46 @@ export function Documents() {
 
       {groups.map(({ app, docs, queries, soonestHours }) => (
         <section className="card" key={app.id} aria-labelledby={`c-${app.id}`}>
-          {/* "Open case" is always present — a broker reading a document problem
-              wants the case it belongs to, not a dead end. */}
-          <div className="between wrap" style={{ alignItems: 'flex-start', gap: 'var(--sp-4)' }}>
+          {/* Client header: who it is, how much is outstanding, and the way
+              through to the case. No buttons here — actions belong to the block
+              they act on, one row further down. */}
+          <div className="doc-client">
             <div>
               <h2 id={`c-${app.id}`}>{app.company}</h2>
-              <p className="secondary text-sm" style={{ marginTop: 4 }}>
+              <p className="secondary text-sm" style={{ marginTop: 3 }}>
                 {app.contactName} · {plural(docs.length + queries.length, 'item')} to clear
               </p>
             </div>
-            <div className="row-tight">
-              {soonestHours !== undefined && (
-                <Clock tone={soonestHours < 24 ? 'urgent' : 'soon'}>{countdown(soonestHours)}</Clock>
-              )}
-              <Link to={`/cases/${app.id}`} className="text-sm semibold row-tight" style={{ gap: 6 }}>
-                Open case <ArrowRight size={ICON_PILL} weight="bold" aria-hidden />
-              </Link>
-            </div>
+            <Link to={`/cases/${app.id}`} className="text-sm semibold row-tight nowrap" style={{ gap: 6 }}>
+              Open case <ArrowRight size={ICON_PILL} weight="bold" aria-hidden />
+            </Link>
           </div>
 
           {queries.length > 0 && (
-            <div className="region">
-              <h3>Queries</h3>
-              <p className="secondary text-sm" style={{ marginTop: 3 }}>
-                Answer these first — an open query holds the case.
-              </p>
-              <div className="list" style={{ marginTop: 'var(--sp-4)' }}>
+            <div className="doc-block">
+              <div className="doc-block__head">
+                <div>
+                  <h3>Queries</h3>
+                  <p className="secondary text-sm">An open query holds the case. Answer it first.</p>
+                </div>
+                {soonestHours !== undefined && (
+                  <Clock tone={soonestHours < 24 ? 'urgent' : 'soon'}>{countdown(soonestHours)}</Clock>
+                )}
+              </div>
+
+              <div className="list">
                 {queries.map((q) => (
                   <div className="doc-row" key={q.id}>
-                    <span className="doc-row__icon" aria-hidden>
-                      <ChatCircleDots size={ICON_INLINE} weight={ICON_WEIGHT} color="var(--danger-text)" />
+                    <span className="doc-row__icon doc-row__icon--query" aria-hidden>
+                      <ChatCircleDots size={ICON_INLINE} weight={ICON_WEIGHT} />
                     </span>
                     <div className="grow">
                       <h4>{q.subject}</h4>
                       <p className="secondary text-sm">{q.messages[0]?.body}</p>
                     </div>
-                    <Link to={`/cases/${app.id}`} className="btn btn--primary btn--sm nowrap">Reply</Link>
+                    <div className="row-tight">
+                      <Link to={`/cases/${app.id}`} className="btn btn--secondary btn--sm nowrap">Reply</Link>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -128,32 +136,30 @@ export function Documents() {
           )}
 
           {docs.length > 0 && (
-            <div className="region">
-              <div className="between wrap" style={{ alignItems: 'flex-start', gap: 'var(--sp-4)' }}>
+            <div className="doc-block">
+              <div className="doc-block__head">
                 <div>
                   <h3>Documents</h3>
-                  <p className="secondary text-sm" style={{ marginTop: 3 }}>
-                    One good version is enough. We&apos;ll tell you what&apos;s missing.
-                  </p>
+                  <p className="secondary text-sm">One good version is enough. We'll tell you what's missing.</p>
                 </div>
                 <div className="row-tight wrap">
                   {/* The action that was missing entirely: brokers were retyping
                       our document list into WhatsApp by hand. */}
-                  <Button size="sm" variant="secondary" icon={<WhatsappLogo size={ICON_PILL} weight={ICON_WEIGHT} aria-hidden />}>
-                    Send list to client
+                  <Button variant="quiet" icon={<WhatsappLogo size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden />}>
+                    Send list
                   </Button>
-                  <Button size="sm" icon={<UploadSimple size={ICON_PILL} weight="bold" aria-hidden />}>
+                  <Button variant="secondary" icon={<UploadSimple size={ICON_INLINE} weight="bold" aria-hidden />}>
                     Upload document
                   </Button>
                 </div>
               </div>
 
-              <div className="list" style={{ marginTop: 'var(--sp-4)' }}>
+              <div className="list">
                 {docs.map((d) => {
                   const done = received[`${app.id}-${d.id}`]
                   return (
                     <div className="doc-row" key={d.id}>
-                      <span className="doc-row__icon" aria-hidden>
+                      <span className="doc-row__icon doc-row__icon--doc" aria-hidden>
                         <FileText size={ICON_INLINE} weight={ICON_WEIGHT} />
                       </span>
                       <div className="grow">
@@ -195,10 +201,14 @@ export function Documents() {
 
       {expiring.length > 0 && (
         <section className="card" aria-labelledby="expiring">
-          <h2 id="expiring">Expiring soon</h2>
-          <p className="secondary text-sm" style={{ marginTop: 4 }}>
-            A document that expires mid-assessment restarts the clock.
-          </p>
+          <div className="doc-client">
+            <div>
+              <h2 id="expiring">Expiring soon</h2>
+              <p className="secondary text-sm" style={{ marginTop: 3 }}>
+                A document that expires mid-assessment restarts the clock.
+              </p>
+            </div>
+          </div>
           <div className="list" style={{ marginTop: 'var(--sp-4)' }}>
             {expiring.map(({ app, doc }) => (
               <Link key={`${app.id}-${doc.id}`} to={`/cases/${app.id}`} className="doc-row doc-row--link">
