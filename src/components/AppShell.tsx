@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
-  House, FilePlus, Rows, UsersThree, Files, Receipt, CurrencyDollar,
-  ChartLine, Gear, SignOut, List, X, Bell, MagnifyingGlass, Medal,
+  SquaresFour, Plus, Briefcase, FileText, PencilSimpleLine, CreditCard, UsersThree,
+  ChartPieSlice, Bell, Gear, List, X, SignOut,
 } from '@phosphor-icons/react'
-import { broker, actionRequired, liveApplications, clients, notifications } from '../lib/data'
+import { broker, liveApplications, clients, notifications } from '../lib/data'
 import { tiers } from '../lib/domain'
-import { IconButton, ICON_INLINE, ICON_PILL, ICON_ROW, ICON_WEIGHT } from './ui'
+import { Button, IconButton, ICON_INLINE, ICON_ROW, ICON_WEIGHT } from './ui'
 import { ThemeToggle } from './ThemeToggle'
 
 const openQueries = liveApplications.flatMap((a) => a.queries).filter((q) => !q.resolved).length
@@ -14,23 +14,70 @@ const docsNeedingAction = liveApplications.flatMap((a) => a.documents)
   .filter((d) => d.status === 'rejected' || d.status === 'replacement_required').length
 const unread = notifications.filter((n) => !n.read).length
 
-const nav = [
-  { to: '/', label: 'Dashboard', icon: House, end: true },
-  { to: '/new-case', label: 'New case', icon: FilePlus },
-  { to: '/cases', label: 'Cases', icon: Rows, count: liveApplications.length },
-  { to: '/funded', label: 'Funded', icon: UsersThree, count: clients.length },
-  { to: '/documents', label: 'Documents & queries', icon: Files, count: openQueries + docsNeedingAction, urgent: true },
-  { to: '/offers', label: 'Offers', icon: Receipt, count: liveApplications.filter((a) => a.offer && !a.offer.signedAt).length },
-  { to: '/commissions', label: 'Commissions', icon: CurrencyDollar },
-  { to: '/reports', label: 'Reports', icon: ChartLine },
+/**
+ * Nav grouped into three sections, matching the build the client preferred.
+ *
+ * Grouping earns its place at ten items: an ungrouped list of ten reads as one
+ * undifferentiated column, and the three groups answer genuinely different
+ * questions — what am I working on, how am I doing, and my account.
+ */
+interface NavItem {
+  to: string
+  label: string
+  icon: typeof SquaresFour
+  count?: number
+  end?: boolean
+  urgent?: boolean
+  dot?: boolean
+}
+
+const groups: { label: string; items: NavItem[] }[] = [
+  {
+    label: 'Workspace',
+    items: [
+      { to: '/', label: 'Overview', icon: SquaresFour, end: true },
+      { to: '/new-case', label: 'New case', icon: Plus },
+      { to: '/cases', label: 'Cases', icon: Briefcase, count: liveApplications.length },
+      { to: '/documents', label: 'Documents', icon: FileText, count: openQueries + docsNeedingAction, urgent: true },
+      { to: '/offers', label: 'Offers', icon: PencilSimpleLine, count: liveApplications.filter((a) => a.offer && !a.offer.signedAt).length },
+    ],
+  },
+  {
+    label: 'Performance',
+    items: [
+      { to: '/commissions', label: 'Commissions', icon: CreditCard },
+      { to: '/clients', label: 'Clients', icon: UsersThree, count: clients.length },
+      { to: '/reports', label: 'Reports', icon: ChartPieSlice },
+    ],
+  },
+  {
+    label: 'Partner desk',
+    items: [
+      { to: '/notifications', label: 'Notifications', icon: Bell, dot: unread > 0 },
+      { to: '/settings', label: 'Settings', icon: Gear },
+    ],
+  },
 ]
+
+/** Breadcrumb label per route, so the topbar always says where you are. */
+const crumbs: Record<string, string> = {
+  '/': 'Partner desk',
+  '/new-case': 'New case',
+  '/cases': 'Cases',
+  '/documents': 'Documents',
+  '/offers': 'Offers',
+  '/commissions': 'Commissions',
+  '/clients': 'Clients',
+  '/reports': 'Reports',
+  '/notifications': 'Notifications',
+  '/settings': 'Settings',
+}
 
 export function AppShell() {
   const [open, setOpen] = useState(false)
   const { pathname } = useLocation()
   const navigate = useNavigate()
 
-  /* Close the drawer on navigation, and on Escape. */
   useEffect(() => setOpen(false), [pathname])
   useEffect(() => {
     if (!open) return
@@ -40,6 +87,7 @@ export function AppShell() {
   }, [open])
 
   const tier = tiers[broker.tier]
+  const crumb = crumbs[pathname] ?? (pathname.startsWith('/cases/') ? 'Case' : 'Partner desk')
 
   return (
     <div className="shell">
@@ -47,12 +95,9 @@ export function AppShell() {
 
       <aside className="sidebar" data-open={open}>
         <div className="sidebar__brand between">
-          <a href="/" className="brand" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <span>
-              <span className="brand__word">FlapKap</span>
-              <span className="brand__sub">Partner portal</span>
-            </span>
-            <span className="brand__mark" aria-hidden="true" />
+          <a href="#/" className="brand" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <span className="brand__badge" aria-hidden>F</span>
+            <span className="brand__word">flapkap</span>
           </a>
           <IconButton label="Close menu" plain onClick={() => setOpen(false)} className="sidebar-toggle">
             <X size={ICON_ROW} weight={ICON_WEIGHT} />
@@ -60,40 +105,37 @@ export function AppShell() {
         </div>
 
         <div className="sidebar__scroll">
-          <div className="sidebar__cta">
-            <button className="btn btn--primary btn--block" onClick={() => navigate('/new-case')}>
-              <FilePlus size={ICON_INLINE} weight="bold" aria-hidden /> New case
-            </button>
-          </div>
+          {groups.map((g) => (
+            <nav className="nav" aria-label={g.label} key={g.label}>
+              <p className="nav__group">{g.label}</p>
+              {g.items.map(({ to, label, icon: Icon, count, end, urgent, dot }) => (
+                <NavLink key={to} to={to} end={end} className="nav__item">
+                  {({ isActive }) => (
+                    <>
+                      <Icon size={ICON_INLINE} weight={isActive ? 'fill' : ICON_WEIGHT} aria-hidden />
+                      <span>{label}</span>
+                      {count ? (
+                        <span className="nav__count" data-urgent={urgent && count > 0 ? 'true' : undefined}>{count}</span>
+                      ) : null}
+                      {dot && <span className="nav__dot" aria-label="unread" />}
+                    </>
+                  )}
+                </NavLink>
+              ))}
+            </nav>
+          ))}
+        </div>
 
-          <nav className="nav" aria-label="Main">
-            {nav.map(({ to, label, icon: Icon, count, end, urgent }) => (
-              <NavLink key={to} to={to} end={end} className="nav__item">
-                {({ isActive }) => (
-                  <>
-                    <Icon size={ICON_ROW} weight={isActive ? 'fill' : ICON_WEIGHT} aria-hidden />
-                    <span>{label}</span>
-                    {count ? (
-                      <span className="nav__count" data-urgent={urgent && count > 0 ? 'true' : undefined}>
-                        {count}
-                      </span>
-                    ) : null}
-                  </>
-                )}
-              </NavLink>
-            ))}
-          </nav>
-
-          <nav className="nav sidebar__foot" aria-label="Account">
-            <NavLink to="/settings" className="nav__item">
-              {({ isActive }) => (
-                <><Gear size={ICON_ROW} weight={isActive ? 'fill' : ICON_WEIGHT} aria-hidden /><span>Profile &amp; settings</span></>
-              )}
-            </NavLink>
-            <NavLink to="/login" className="nav__item">
-              <SignOut size={ICON_ROW} weight={ICON_WEIGHT} aria-hidden /><span>Log out</span>
-            </NavLink>
-          </nav>
+        {/* Identity pinned to the foot, as in the preferred build. */}
+        <div className="sidebar__user">
+          <span className="avatar" aria-hidden>{broker.initials}</span>
+          <span className="grow">
+            <span className="sidebar__user-name">{broker.name}</span>
+            <span className="sidebar__user-tier">{tier.label} partner</span>
+          </span>
+          <IconButton label="Log out" plain onClick={() => navigate('/login')}>
+            <SignOut size={ICON_INLINE} weight={ICON_WEIGHT} />
+          </IconButton>
         </div>
       </aside>
 
@@ -103,33 +145,23 @@ export function AppShell() {
             <List size={ICON_ROW} weight={ICON_WEIGHT} />
           </IconButton>
 
-          <button className="btn btn--ghost btn--sm" onClick={() => navigate('/cases')}>
-            <MagnifyingGlass size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden /> Search clients
-          </button>
+          <nav aria-label="Breadcrumb" className="crumbs">
+            <span className="crumbs__org">{broker.company}</span>
+            <span aria-hidden className="crumbs__sep">/</span>
+            <span className="crumbs__here">{crumb}</span>
+          </nav>
 
           <div className="push row-tight">
-            <span className="pill pill--gold" title={`${tier.label} partner`}>
-              <Medal size={ICON_PILL} weight="fill" aria-hidden /> {tier.label}
-            </span>
             <ThemeToggle />
             <IconButton label={`Notifications, ${unread} unread`} plain onClick={() => navigate('/notifications')}>
               <span style={{ position: 'relative', display: 'grid', placeItems: 'center' }}>
                 <Bell size={ICON_ROW} weight={ICON_WEIGHT} />
-                {unread > 0 && (
-                  <span
-                    aria-hidden
-                    style={{
-                      position: 'absolute', top: -1, right: -1, width: 8, height: 8,
-                      borderRadius: 999, background: 'var(--danger)',
-                      boxShadow: '0 0 0 2px var(--surface-1)',
-                    }}
-                  />
-                )}
+                {unread > 0 && <span className="bell-dot" aria-hidden />}
               </span>
             </IconButton>
-            <span className="avatar" aria-hidden title={broker.name}>
-              {broker.initials}
-            </span>
+            <Button size="sm" icon={<Plus size={ICON_INLINE} weight="bold" aria-hidden />} onClick={() => navigate('/new-case')}>
+              New case
+            </Button>
           </div>
         </div>
 
@@ -140,5 +172,3 @@ export function AppShell() {
     </div>
   )
 }
-
-export { actionRequired }

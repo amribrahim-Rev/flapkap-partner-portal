@@ -25,7 +25,7 @@ export function Clients() {
   if (clients.length === 0) {
     return (
       <div className="page">
-        <PageHead title="Funded" />
+        <PageHead title="Clients" />
         <div className="card">
           <EmptyState
             icon={<UsersThree size={ICON_EMPTY} weight={ICON_WEIGHT} />}
@@ -47,7 +47,7 @@ export function Clients() {
     <div className="page">
       <PageHead
         eyebrow={`${plural(clients.length, 'client')} funded`}
-        title="Funded"
+        title="Clients"
         meta="Repeat business is the cheapest commission you can earn."
       />
 

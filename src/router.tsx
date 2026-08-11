@@ -29,7 +29,7 @@ export const router = createHashRouter([
          broker brought when it only ever meant the ones who funded. */
       { path: 'cases', element: <Applications /> },
       { path: 'cases/:id', element: <ApplicationDetail /> },
-      { path: 'funded', element: <Clients /> },
+      { path: 'clients', element: <Clients /> },
       { path: 'documents', element: <Documents /> },
       { path: 'offers', element: <Offers /> },
       { path: 'commissions', element: <Commissions /> },
@@ -40,7 +40,7 @@ export const router = createHashRouter([
       /* Old paths stay alive so nothing anyone bookmarked or shared breaks. */
       { path: 'pipeline', element: <Navigate to="/cases" replace /> },
       
-      { path: 'clients', element: <Navigate to="/funded" replace /> },
+      { path: 'clients', element: <Navigate to="/clients" replace /> },
       { path: 'applications', element: <Navigate to="/cases" replace /> },
       { path: 'new-lead', element: <Navigate to="/new-case" replace /> },
       { path: '*', element: <NotFound /> },
