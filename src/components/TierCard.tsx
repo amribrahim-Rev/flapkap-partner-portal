@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Fire } from '@phosphor-icons/react'
+import { Fire, Medal, Sparkle } from '@phosphor-icons/react'
 import { broker } from '../lib/data'
 import { partB, tierNickname, tierOrder, tiers } from '../lib/domain'
 import { aed, plural } from '../lib/format'
-import { ICON_PILL } from './ui'
+import { ICON_PILL, ICON_ROW } from './ui'
 
 const tier = tiers[broker.tier]
 const nextKey = tierOrder[tierOrder.indexOf(broker.tier) + 1]
@@ -49,6 +49,14 @@ export function TierCard() {
     <section className="tier card card--xl" aria-labelledby="tier-h">
       <div className="tier__head">
         <div>
+          {/* The gold pill stays — it is the quick, repeatable label. The medal
+              badge below is the earned object. Same colour, different jobs. */}
+          <div className="row-tight wrap" style={{ marginBottom: 'var(--sp-3)' }}>
+            <span className="pill pill--gold" data-tier={broker.tier}>
+              <Sparkle size={ICON_PILL} weight="fill" aria-hidden /> {tier.label} tier
+            </span>
+            <span className="secondary text-sm">{broker.quarter.label}</span>
+          </div>
           <h2 id="tier-h">{next ? `Unlock ${next.label}` : `${tier.label} secured`}</h2>
           <p className="secondary text-sm" style={{ marginTop: 6, maxWidth: '56ch' }}>
             {next ? (
@@ -76,12 +84,20 @@ export function TierCard() {
         </div>
       </div>
 
-      {/* Identity: badge, what the tier is called, and the streak. */}
+      {/* Identity: the tier's own colour, its medal, and its name — not a bare
+          initial in the brand accent, which said nothing and read as a
+          mismatch on a Gold tier. */}
       <div className="tier__id">
-        <span className="tier__badge" aria-hidden>{tier.label[0]}</span>
+        <span className="tier__badge" data-tier={broker.tier} aria-hidden>
+          <Medal size={ICON_ROW} weight="fill" />
+          <span className="tier__badge-letter">{tier.label}</span>
+        </span>
         <div>
           <p className="micro">Your tier</p>
-          <p className="tier__name">{tierNickname[broker.tier]}</p>
+          <p className="tier__name">
+            <span style={{ color: 'var(--gold-ink)' }}>{tier.label}</span>
+            <span className="secondary"> · {tierNickname[broker.tier]}</span>
+          </p>
           {broker.quarter.streakMonths > 1 && (
             <p className="text-sm secondary row-tight" style={{ gap: 5, marginTop: 2 }}>
               <Fire size={ICON_PILL} weight="fill" color="var(--warning)" aria-hidden />

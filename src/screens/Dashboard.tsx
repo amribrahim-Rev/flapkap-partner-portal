@@ -1,13 +1,13 @@
 import { Link, useNavigate } from 'react-router-dom'
 import {
   Plus, CheckCircle, UploadSimple, PencilSimpleLine, ChatCircleDots, Hourglass,
-  ArrowRight, CaretRight,
+  ArrowRight, CaretRight, Check, TrendUp, WhatsappLogo,
 } from '@phosphor-icons/react'
 import { applications, broker, clients, commissionPaid, payable, expected } from '../lib/data'
-import { stageGroups } from '../lib/domain'
+import { partA, stageGroups } from '../lib/domain'
 import { aed, longDate, plural } from '../lib/format'
 import {
-  Button, EmptyState, ICON_EMPTY, ICON_INLINE, ICON_PILL, ICON_WEIGHT, PageHead, Pill,
+  Button, EmptyState, ICON_EMPTY, ICON_INLINE, ICON_PILL, ICON_WEIGHT, PageHead, Pill, Progress,
 } from '../components/ui'
 import { TierCard } from '../components/TierCard'
 
@@ -173,16 +173,48 @@ export function Dashboard() {
               </Link>
             </div>
 
+            {/* Each card leads with what the top-up is WORTH to the broker.
+                It used to show "AED 870,000 disbursed · 44% repaid", which is
+                information, not a reason to pick up the phone. */}
             <div className="tile-grid" style={{ marginTop: 'var(--sp-4)' }}>
-              {topUpReady.map((c) => (
-                <Link key={c.id} to="/clients" className="tile">
-                  <span className="grow">
-                    <span className="semibold" style={{ display: 'block' }}>{c.company}</span>
-                    <span className="text-xs muted">{aed(c.totalDisbursed)} disbursed · {c.repaidPct}% repaid</span>
-                  </span>
-                  <Pill tone="pill--done" noDot>Eligible</Pill>
-                </Link>
-              ))}
+              {topUpReady.map((c) => {
+                const estimate = partA(c.totalDisbursed, 0.0175)
+                return (
+                  <div className="topup" key={c.id}>
+                    <div className="between" style={{ alignItems: 'flex-start' }}>
+                      <div>
+                        <h3 style={{ fontSize: 'var(--text-h4)' }}>{c.company}</h3>
+                        <p className="text-xs muted">{c.industry}</p>
+                      </div>
+                      <Pill tone="pill--done" noDot>
+                        <Check size={ICON_PILL} weight="bold" aria-hidden /> Eligible
+                      </Pill>
+                    </div>
+
+                    <div className="topup__earn">
+                      <p className="text-xs muted">A similar facility would pay you about</p>
+                      <p className="topup__figure">{aed(estimate)}</p>
+                    </div>
+
+                    <div>
+                      <div className="between text-xs" style={{ marginBottom: 5 }}>
+                        <span className="secondary">{c.repaidPct}% repaid on {aed(c.totalDisbursed)}</span>
+                        <span className="muted">no missed payments</span>
+                      </div>
+                      <Progress value={c.repaidPct} tone="success" label={`${c.company} repayment progress`} />
+                    </div>
+
+                    <div className="row-tight">
+                      <Button size="sm" icon={<TrendUp size={ICON_PILL} weight="bold" aria-hidden />}>
+                        Request top-up
+                      </Button>
+                      <Button size="sm" variant="secondary" icon={<WhatsappLogo size={ICON_PILL} weight={ICON_WEIGHT} aria-hidden />}>
+                        Message
+                      </Button>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </section>
         )}

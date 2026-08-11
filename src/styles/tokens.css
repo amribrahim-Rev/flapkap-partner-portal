@@ -162,6 +162,14 @@
   --nav-hover-bg:  rgba(255, 255, 255, 0.035);
   --lit-edge:      rgba(231, 236, 244, 0.16);
 
+  /* ---------- Tier identity ----------
+     Deliberately NOT themed. A tier is a badge the broker earns, so Gold is
+     the same gold in light and dark — the same reason a bank card does not
+     change colour with your OS setting. Each fill carries its own text colour,
+     verified above 7:1 on the fill itself. */
+  --tier-silver-fill: #c2cad6;  --tier-silver-on: #22282f;
+  --tier-gold-fill:   #e6b860;  --tier-gold-on:   #3d2a04;
+  --tier-plat-fill:   #dbe4f2;  --tier-plat-on:   #1b2433;
   --funnel-0: rgba(240, 138, 160, 0.14);
   --funnel-1: rgba(154, 164, 186, 0.10);
   --funnel-2: rgba(230, 184, 96, 0.14);
