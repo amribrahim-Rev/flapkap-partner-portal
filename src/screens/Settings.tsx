@@ -31,9 +31,11 @@ export function Settings() {
       <PageHead title="Profile & settings" meta={`${broker.company} · partner since ${longDate(broker.memberSince)}`} />
 
       <section className="card">
-        <div className="row" style={{ alignItems: 'flex-start' }}>
+        {/* Wraps on a phone: without a floor on the text block the pill kept its
+            width and squeezed the sentence into a four-word column. */}
+        <div className="row wrap" style={{ alignItems: 'flex-start' }}>
           <Chip tone="gold"><Medal size={ICON_ROW} weight="fill" /></Chip>
-          <div className="grow">
+          <div className="grow" style={{ minWidth: 200 }}>
             <h2>{tier.label} partner</h2>
             <p className="secondary text-sm" style={{ marginTop: 4 }}>
               {aed(tier.monthlyTarget, { compact: true })} a month, {aed(tier.quarterlyTarget, { compact: true })} a

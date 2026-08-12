@@ -273,3 +273,14 @@
     --text-h1:  1.5rem;
   }
 }
+
+/* Phones. At 375px a 22px card pad leaves 297px of content, which is what made
+   the tier card feel squeezed — every figure and label was fighting for the
+   same line. Buy the width back from the chrome, not from the type. */
+@media (max-width: 560px) {
+  :root {
+    --page-pad: var(--sp-3);
+    --card-pad: 16px;
+    --card-gap: 14px;
+  }
+}

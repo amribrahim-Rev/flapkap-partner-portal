@@ -83,6 +83,13 @@
 .page { max-width: var(--content-max); margin: 0 auto; padding: var(--page-pad); display: grid; gap: var(--sp-6); }
 .page--narrow { max-width: var(--form-max); }
 .page__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-4); flex-wrap: wrap; }
+/* On a phone the head's action wraps onto its own line, where a 200px button
+   reads as an orphan. Full width instead — it is the page's primary move. */
+@media (max-width: 560px) {
+  .page__head > * { min-width: 0; }
+  .page__head > .row-tight { width: 100%; }
+  .page__head .btn { flex: 1; }
+}
 
 .sidebar-toggle { display: none; }
 
@@ -1013,10 +1020,18 @@
 .sidebar__user-name { display: block; font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 .sidebar__user-tier { display: block; font-size: var(--text-xs); color: var(--text-muted); }
 
-.crumbs { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--text-sm); min-width: 0; }
+.crumbs { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--text-sm); min-width: 0; overflow: hidden; }
 .crumbs__org { color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .crumbs__sep { color: var(--text-muted); }
-.crumbs__here { color: var(--text); font-weight: var(--weight-semibold); white-space: nowrap; }
+.crumbs__here { color: var(--text); font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Below the tablet break the org name ellipsises to nothing and leaves a
+   dangling slash, and "Partner desk" runs under the theme toggle. The page's
+   own h1 already says where you are, so the crumb is the thing to drop. */
+@media (max-width: 700px) {
+  .crumbs { display: none; }
+}
+.hide-phone { display: inline; }
+@media (max-width: 560px) { .hide-phone { display: none; } }
 
 .bell-dot {
   position: absolute; top: -1px; right: -1px;
@@ -1062,6 +1077,8 @@
 @media (hover: hover) and (pointer: fine) {
   .track-row:hover .track-row__bar { background: var(--border-strong); }
 }
+/* Thumbs need the full target. At 375px these rows were 38px tall. */
+@media (pointer: coarse) { .track-row { min-height: var(--touch-min); } }
 
 /* Top-up client tiles, two across inside the wide card. */
 .tile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--sp-3); }
@@ -1157,10 +1174,32 @@
 .switch[aria-checked='true'] .switch__knob { transform: translateX(16px); }
 
 @media (max-width: 640px) {
-  .tier__head { flex-direction: column; }
+  .tier__head { flex-direction: column; gap: var(--sp-4); }
   .tier__earned { text-align: left; }
   .tier__figure { font-size: 1.875rem; }
   .switch { width: 100%; justify-content: space-between; }
+}
+
+/* Phones: the absolutely-positioned stops collide. At 375px Silver ended at
+   211px and Gold started at 181px — two labels on top of each other. Spread
+   them as a three-column legend above the track instead; the marker still
+   sits at the true position, which is what carries the meaning. */
+@media (max-width: 560px) {
+  .ladder2 { padding-top: 0; }
+  .ladder2__stops {
+    position: static; height: auto;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    gap: var(--sp-2); margin-bottom: var(--sp-3);
+  }
+  .ladder2__stops .ladder2__stop,
+  .ladder2__stops .ladder2__stop:first-child,
+  .ladder2__stops .ladder2__stop[data-you] {
+    position: static; transform: none; bottom: auto;
+  }
+  .ladder2__stop { text-align: left; }
+  .ladder2__stop[data-you] { text-align: center; }
+  .ladder2__stop:last-child { text-align: right; }
+  .ladder2__stop-label { font-size: 0.5625rem; letter-spacing: 0.08em; }
 }
 /* ---------------- Top-up card ----------------
    Leads with the earnable commission rather than the facility history: a

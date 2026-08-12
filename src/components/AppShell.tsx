@@ -159,8 +159,16 @@ export function AppShell() {
                 {unread > 0 && <span className="bell-dot" aria-hidden />}
               </span>
             </IconButton>
-            <Button size="sm" icon={<Plus size={ICON_INLINE} weight="bold" aria-hidden />} onClick={() => navigate('/new-case')}>
-              New case
+            {/* On a phone the label is the first thing to go: the icon and the
+                accessible name carry it, and the width goes to the breadcrumb
+                instead of colliding with it. */}
+            <Button
+              size="sm"
+              aria-label="New case"
+              icon={<Plus size={ICON_INLINE} weight="bold" aria-hidden />}
+              onClick={() => navigate('/new-case')}
+            >
+              <span className="hide-phone">New case</span>
             </Button>
           </div>
         </div>

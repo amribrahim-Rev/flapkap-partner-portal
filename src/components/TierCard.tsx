@@ -57,7 +57,7 @@ export function TierCard() {
           {/* The gold pill stays — it is the quick, repeatable label. The medal
               badge below is the earned object. Same colour, different jobs. */}
           <div className="row-tight wrap" style={{ marginBottom: 'var(--sp-3)' }}>
-            <span className="pill pill--gold" data-tier={broker.tier}>
+            <span className="pill pill--gold pill--no-dot" data-tier={broker.tier}>
               <Sparkle size={ICON_PILL} weight="fill" aria-hidden /> {tier.label} tier
             </span>
             <span className="secondary text-sm">{broker.quarter.label}</span>
@@ -140,16 +140,24 @@ export function TierCard() {
       </div>
 
       <div className="tier__foot">
+        {/* Each fact is a nowrap unit, so a phone breaks between facts rather
+            than through the middle of one ("50 days / left this quarter"). */}
         <p className="text-sm">
-          <strong>{aed(disbursed, { compact: true })}</strong> <span className="secondary">disbursed</span>
+          <span className="nowrap">
+            <strong>{aed(disbursed, { compact: true })}</strong> <span className="secondary">disbursed</span>
+          </span>
           {next && (
             <>
-              {' · '}
-              <strong style={{ color: 'var(--primary-text)' }}>{aed(toGo, { compact: true })} to go</strong>
+              <span className="secondary"> · </span>
+              <strong className="nowrap" style={{ color: 'var(--primary-text)' }}>
+                {aed(toGo, { compact: true })} to go
+              </strong>
             </>
           )}
-          {' · '}
-          <strong>{plural(daysLeft, 'day')}</strong> <span className="secondary">left this quarter</span>
+          <span className="secondary"> · </span>
+          <span className="nowrap">
+            <strong>{plural(daysLeft, 'day')}</strong> <span className="secondary">left</span>
+          </span>
         </p>
 
         {next && (
