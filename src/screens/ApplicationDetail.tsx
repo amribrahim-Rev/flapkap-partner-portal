@@ -3,12 +3,13 @@ import { Link, useParams } from 'react-router-dom'
 import {
   ArrowLeft, Check, Copy, WhatsappLogo, Warning, ChatCircleDots, Paperclip,
   ArrowUpRight, ShieldCheck, Phone, XCircle, ArrowClockwise, Sparkle, CalendarX,
+  ShareNetwork, EnvelopeSimple, CreditCard,
 } from '@phosphor-icons/react'
-import { broker, byId } from '../lib/data'
+import { broker, byId, TODAY } from '../lib/data'
 import {
-  docStatusLabel, docStatusPill, ownerLabel, ownerPill, partA, productLabel, stageLabel,
+  docStatusLabel, docStatusPill, FEE_FLOOR, ownerLabel, ownerPill, partA, productLabel, stageLabel,
 } from '../lib/domain'
-import { aed, countdown, longDate, pct, plural } from '../lib/format'
+import { aed, countdown, daysBetween, longDate, pct, plural } from '../lib/format'
 import {
   Button, Callout, Chip, Clock, EmptyState, ICON_EMPTY, ICON_INLINE, ICON_PILL, ICON_ROW, ICON_WEIGHT, Pill,
 } from '../components/ui'
@@ -115,17 +116,22 @@ export function ApplicationDetail() {
 
   return (
     <div className="page">
-      <div className="row" style={{ alignItems: 'flex-start' }}>
-        <Link to="/cases" className="btn-icon" aria-label="Back to cases">
-          <ArrowLeft size={ICON_INLINE} weight="bold" aria-hidden />
-        </Link>
-        <div className="grow">
+      <div className="between wrap" style={{ alignItems: 'flex-start', gap: 'var(--sp-4)' }}>
+        <div>
           <h1>{a.company}</h1>
-          <p className="secondary text-sm" style={{ marginTop: 6 }}>
-            {a.industry} · {a.ref} · submitted {longDate(a.submittedOn)}
+          <p className="secondary text-sm row-tight wrap" style={{ marginTop: 8, gap: 'var(--sp-3)' }}>
+            <Pill tone={ownerPill[a.owner]}>{ownerLabel[a.owner]}</Pill>
+            <span>{a.industry} · {a.ref} · submitted {longDate(a.submittedOn)}</span>
           </p>
         </div>
-        <Pill tone={ownerPill[a.owner]}>{ownerLabel[a.owner]}</Pill>
+        <div className="row-tight wrap">
+          <Link to="/cases" className="btn btn--secondary btn--sm">
+            <ArrowLeft size={ICON_INLINE} weight="bold" aria-hidden /> All cases
+          </Link>
+          <Button size="sm" variant="secondary" icon={<ShareNetwork size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden />}>
+            Share
+          </Button>
+        </div>
       </div>
 
       <div role="tablist" aria-label="Case sections" className="tabs">
@@ -239,38 +245,75 @@ export function ApplicationDetail() {
             </section>
           </div>
 
-          <aside style={{ display: 'grid', gap: 'var(--sp-4)', alignContent: 'start' }}>
+          <aside className="rail">
+            {/* Commission, itemised. One big number tells the broker what they
+                get; the four rows tell them why, which is what stops the
+                "is this right?" call to the partner manager. */}
             {a.offer && (
               <section className="card">
-                <h3>Your commission on this deal</h3>
-                <p className="tnum" style={{ fontSize: '1.75rem', fontWeight: 700, letterSpacing: 'var(--tracking-tight)', margin: '8px 0 2px' }}>
-                  {aed(a.commission ?? 0)}
-                </p>
-                <p className="secondary text-sm">
-                  {a.offer.feeRate <= 0.015
-                    ? <>1.00% of {aed(a.offer.amount)} — the 1.5% fee floor rate</>
-                    : <>75% of the {pct(a.offer.feeRate)} arrangement fee on {aed(a.offer.amount)}</>}
-                </p>
-                <div className="region">
-                  <p className="secondary text-sm">
-                    {a.commissionStatus === 'paid' ? <>Paid {longDate(a.commissionDueOn!)}.</>
-                      : a.commissionStatus === 'awaiting_first_repayment'
-                        ? <>Held until the client’s first repayment. Expected <strong style={{ color: 'var(--text)' }}>{longDate(a.commissionDueOn!)}</strong>.</>
-                        : <>Payable once the facility is disbursed and the client makes their first repayment.</>}
-                  </p>
+                <div className="card__head">
+                  <div>
+                    <h3>Commission</h3>
+                    <p className="secondary text-sm" style={{ marginTop: 3 }}>Estimated partner earning</p>
+                  </div>
+                  <span className="card__ico" aria-hidden>
+                    <CreditCard size={ICON_INLINE} weight={ICON_WEIGHT} color="var(--success-ink)" />
+                  </span>
                 </div>
+
+                <dl className="inset rail__ledger" style={{ marginTop: 'var(--sp-4)' }}>
+                  <div className="rail__ledger-row">
+                    <dt>Disbursal</dt><dd>{aed(a.offer.amount)}</dd>
+                  </div>
+                  <div className="rail__ledger-row">
+                    <dt>Arrangement fee</dt><dd>{pct(a.offer.feeRate)}</dd>
+                  </div>
+                  <div className="rail__ledger-row">
+                    <dt>Partner share</dt>
+                    <dd>{a.offer.feeRate <= FEE_FLOOR ? '1.00% of disbursal' : '75% of the fee'}</dd>
+                  </div>
+                  <div className="rail__ledger-row rail__ledger-row--total">
+                    <dt>Commission</dt><dd>{aed(a.commission ?? 0)}</dd>
+                  </div>
+                </dl>
+
+                <p className="text-xs muted" style={{ marginTop: 'var(--sp-3)' }}>
+                  {a.commissionStatus === 'paid' ? <>Paid {longDate(a.commissionDueOn!)}. </>
+                    : a.commissionStatus === 'awaiting_first_repayment'
+                      ? <>Held until the client’s first repayment, expected {longDate(a.commissionDueOn!)}. </>
+                      : <>Payable once the facility disburses and the client makes their first repayment. </>}
+                  Interest paid by the client never affects either commission figure.
+                </p>
               </section>
             )}
 
+            {/* Contact. Full number and email — it is the broker's own client,
+                and masking it only sends them back to their phone. */}
             <section className="card">
-              <h3>Client contact</h3>
-              <div className="row" style={{ marginTop: 'var(--sp-4)' }}>
-                <Chip tone="primary"><Phone size={ICON_INLINE} weight={ICON_WEIGHT} /></Chip>
-                <div className="grow">
-                  <h4>{a.contactName}</h4>
-                  <p className="secondary text-sm">{a.contactPhone}</p>
+              <div className="card__head">
+                <div>
+                  <h3>Client contact</h3>
+                  <p className="secondary text-sm" style={{ marginTop: 3 }}>Use the channel they prefer</p>
                 </div>
               </div>
+
+              <div style={{ marginTop: 'var(--sp-4)', display: 'grid', gap: 'var(--sp-3)' }}>
+                <a className="rail__contact" href={`tel:${a.contactPhone.replace(/\s/g, '')}`}>
+                  <Chip tone="primary"><Phone size={ICON_INLINE} weight={ICON_WEIGHT} /></Chip>
+                  <span>
+                    <span className="rail__contact-name">{a.contactName}</span>
+                    <span className="rail__contact-meta">{a.contactPhone}</span>
+                  </span>
+                </a>
+                <a className="rail__contact" href={`mailto:${a.contactEmail}`}>
+                  <Chip tone="primary"><EnvelopeSimple size={ICON_INLINE} weight={ICON_WEIGHT} /></Chip>
+                  <span>
+                    <span className="rail__contact-name">{a.contactEmail}</span>
+                    <span className="rail__contact-meta">Primary contact</span>
+                  </span>
+                </a>
+              </div>
+
               <div style={{ marginTop: 'var(--sp-4)' }}>
                 <Button variant="secondary" size="sm" block onClick={() => setTab('documents')}>
                   View documents ({docsDone}/{a.documents.length})
@@ -278,40 +321,46 @@ export function ApplicationDetail() {
               </div>
             </section>
 
-            {a.protectedUntil && (
-              <section className="card">
-                <div className="row">
-                  <Chip tone="primary"><ShieldCheck size={ICON_INLINE} weight={ICON_WEIGHT} /></Chip>
-                  <div className="grow">
-                    <h4>Case protected</h4>
-                    <p className="secondary text-sm">Until {longDate(a.protectedUntil)}</p>
+            {/* Protection, as a countdown rather than a date. "Until 10 Oct" is
+                a fact; "61 days" is the one that changes what you do today. */}
+            {a.protectedUntil && (() => {
+              const left = daysBetween(TODAY, a.protectedUntil)
+              const urgent = left <= 14
+              return (
+                <section className={`card rail__protect${urgent ? ' rail__protect--urgent' : ''}`}>
+                  <div className="between">
+                    <div>
+                      <p className="rail__protect-days">{plural(Math.max(left, 0), 'day')}</p>
+                      <p className="text-xs muted">case protection window</p>
+                    </div>
+                    <ShieldCheck size={ICON_ROW} weight={ICON_WEIGHT} aria-hidden
+                                 color={urgent ? 'var(--danger-text)' : 'var(--gold-ink)'} />
                   </div>
-                </div>
-                {a.waitlistedPartners ? (
-                  <div style={{ marginTop: 'var(--sp-4)' }}>
-                    <Callout tone="warning">
-                      {plural(a.waitlistedPartners, 'partner')} waitlisted on this licence. Move the case forward to
-                      extend your hold.
-                    </Callout>
-                  </div>
-                ) : null}
-              </section>
-            )}
+                  {a.waitlistedPartners ? (
+                    <div style={{ marginTop: 'var(--sp-4)' }}>
+                      <Callout tone="warning">
+                        {plural(a.waitlistedPartners, 'partner')} waitlisted on this licence. Move the case forward to
+                        extend your hold.
+                      </Callout>
+                    </div>
+                  ) : null}
+                </section>
+              )
+            })()}
 
             <section className="card">
-              <h3>Need help?</h3>
-              <div className="row" style={{ marginTop: 'var(--sp-4)' }}>
-                <span className="avatar avatar--lg" aria-hidden>
-                  {broker.partnerManager.initials}
-                </span>
-                <div className="grow">
-                  <h4>{broker.partnerManager.name}</h4>
-                  <p className="secondary text-sm">Your partner manager</p>
+              <div className="between">
+                <div>
+                  <h3>Partner manager</h3>
+                  <p className="secondary text-sm" style={{ marginTop: 3 }}>
+                    {broker.partnerManager.name} · {broker.partnerManager.team}
+                  </p>
                 </div>
+                <span className="avatar avatar--lg" aria-hidden>{broker.partnerManager.initials}</span>
               </div>
-              <div className="row-tight" style={{ marginTop: 'var(--sp-4)' }}>
+              <div style={{ marginTop: 'var(--sp-4)' }}>
                 <Button size="sm" variant="secondary" block icon={<WhatsappLogo size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden />}>
-                  WhatsApp Sara
+                  Message manager
                 </Button>
               </div>
             </section>

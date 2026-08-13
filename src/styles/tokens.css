@@ -162,6 +162,14 @@
   --nav-hover-bg:  rgba(255, 255, 255, 0.035);
   --lit-edge:      rgba(231, 236, 244, 0.16);
 
+  /* Ring texture, measured off the reference build: one hairline circle with
+     two spread-only halos behind it. The colour is our own --primary-text
+     (#9db0ff) carrying an alpha, so the texture is the accent at a whisper
+     rather than a fourth grey nobody chose. */
+  --ring-line:   rgba(157, 176, 255, 0.08);
+  --ring-halo-1: rgba(157, 176, 255, 0.024);
+  --ring-halo-2: rgba(157, 176, 255, 0.016);
+
   /* ---------- Tier identity ----------
      Deliberately NOT themed. A tier is a badge the broker earns, so Gold is
      the same gold in light and dark — the same reason a bank card does not
@@ -255,6 +263,12 @@
   --nav-active-bg: rgba(40, 12, 255, 0.12);
   --nav-hover-bg:  rgba(11, 18, 32, 0.035);
   --lit-edge:      rgba(11, 18, 32, 0.10);
+
+  /* On white the same alphas vanish, so the ramp is re-picked rather than
+     reused — the identical rule the status colours follow. */
+  --ring-line:   rgba(40, 12, 255, 0.16);
+  --ring-halo-1: rgba(40, 12, 255, 0.045);
+  --ring-halo-2: rgba(40, 12, 255, 0.028);
 
   /* Tints raised well above the dark values: the same alpha over white is
      imperceptible, and the funnel silhouette depends on being seen. */

@@ -1,57 +1,122 @@
 import { Link } from 'react-router-dom'
-import { Receipt, Eye, Check, WhatsappLogo, CaretRight } from '@phosphor-icons/react'
+import {
+  Receipt, Eye, Check, WhatsappLogo, CaretRight, FileText, ArrowRight,
+} from '@phosphor-icons/react'
 import { applications } from '../lib/data'
 import { partA, productLabel } from '../lib/domain'
 import { aed, longDate, pct, plural } from '../lib/format'
 import {
-  Button, Callout, Chip, Clock, EmptyState, ICON_EMPTY, ICON_INLINE, ICON_PILL, ICON_ROW, ICON_WEIGHT, PageHead, Pill, SectionHead,
+  Button, Callout, Chip, Clock, EmptyState, ICON_EMPTY, ICON_INLINE, ICON_PILL, ICON_ROW, ICON_WEIGHT,
+  PageHead, Pill, SectionHead,
 } from '../components/ui'
 
-const withOffers = applications.filter((a) => a.offer)
-const open = withOffers.filter((a) => !a.offer!.signedAt)
-const signed = withOffers.filter((a) => a.offer!.signedAt)
+/**
+ * Three states, in the order a deal walks them.
+ *
+ * "Conditional" is an approval in principle: an indicative amount with the full
+ * document set still outstanding. It is not yet an offer anyone can sign, so it
+ * had no home on this page before and brokers went looking for it here anyway.
+ */
+const conditional = applications.filter((a) => a.stage === 'aip_approved')
+const finalOffers = applications.filter((a) => a.offer && !a.offer.signedAt)
+const signed = applications.filter((a) => a.offer?.signedAt)
 
 const TODAY = new Date('2026-08-10').getTime()
 const daysTo = (iso: string) => Math.round((new Date(iso).getTime() - TODAY) / 86_400_000)
 
 export function Offers() {
-  const atRisk = open.reduce((s, a) => s + partA(a.offer!.amount, a.offer!.feeRate), 0)
+  const atRisk = finalOffers.reduce((s, a) => s + partA(a.offer!.amount, a.offer!.feeRate), 0)
 
   return (
     <div className="page">
       <PageHead
         title="Offers"
         meta={
-          open.length > 0
-            ? <>{plural(open.length, 'offer')} awaiting signature · {aed(atRisk)} of commission riding on them</>
+          finalOffers.length > 0
+            ? <>{plural(finalOffers.length, 'offer')} awaiting signature · {aed(atRisk)} of commission riding on them</>
             : 'Nothing awaiting signature.'
         }
       />
 
-      {open.length === 0 ? (
-        <div className="card">
-          <EmptyState
-            icon={<Receipt size={ICON_EMPTY} weight={ICON_WEIGHT} />}
-            title="No offers out"
-            body="When credit issues an offer it lands here with a signing link you can send straight to your client, and you will see the moment they open it."
-          />
-        </div>
-      ) : (
+      {/* ---------------- Conditional offers ---------------- */}
+      {conditional.length > 0 && (
         <section>
-          <SectionHead title="Awaiting signature" />
+          <SectionHead title={`Conditional offers · ${conditional.length}`} />
           <ul className="list">
-            {open.map((a) => {
+            {conditional.map((a) => {
+              const missing = a.documents.filter((d) => d.required && d.status !== 'verified')
+              return (
+                <li key={a.id}>
+                  <div className="item item--offer" style={{ alignItems: 'flex-start' }}>
+                    <Chip tone="primary"><FileText size={ICON_ROW} weight={ICON_WEIGHT} /></Chip>
+
+                    <div className="grow">
+                      <div className="row-tight wrap" style={{ gap: 'var(--sp-3)' }}>
+                        <Link to={`/cases/${a.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                          <h3 style={{ fontSize: 'var(--text-h4)' }}>{a.company}</h3>
+                        </Link>
+                        <Pill tone="pill--client">Conditional offer</Pill>
+                      </div>
+                      <p className="secondary text-sm" style={{ marginTop: 3 }}>
+                        Indicative {aed(a.requestedAmount ?? 0)} · {a.industry} · {a.ref}
+                      </p>
+
+                      <p className="text-sm" style={{ marginTop: 'var(--sp-3)' }}>
+                        {missing.length > 0
+                          ? <>Becomes a signable offer once {plural(missing.length, 'document')} clears credit: {missing.map((d) => d.name).join(', ')}.</>
+                          : <>All four documents are in. Credit is preparing the final offer.</>}
+                      </p>
+                    </div>
+
+                    <div className="item__actions" style={{ flexDirection: 'column', alignItems: 'flex-end', gap: 'var(--sp-2)' }}>
+                      {a.protectedUntil && (
+                        <Clock tone={daysTo(a.protectedUntil) <= 14 ? 'urgent' : daysTo(a.protectedUntil) <= 30 ? 'soon' : 'calm'}>
+                          {plural(Math.max(daysTo(a.protectedUntil), 0), 'day')} protected
+                        </Clock>
+                      )}
+                      <Link to={`/cases/${a.id}`} className="btn btn--secondary btn--sm">
+                        Open case <ArrowRight size={ICON_PILL} weight="bold" aria-hidden />
+                      </Link>
+                    </div>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      )}
+
+      {/* ---------------- Final offers ---------------- */}
+      <section>
+        <SectionHead title={finalOffers.length > 0 ? `Final offers · ${finalOffers.length}` : 'Final offers'} />
+        {finalOffers.length === 0 ? (
+          <div className="card">
+            <EmptyState
+              icon={<Receipt size={ICON_EMPTY} weight={ICON_WEIGHT} />}
+              title="No offers out"
+              body="When credit issues a final offer it lands here with a signing link you can send straight to your client, and you will see the moment they open it."
+            />
+          </div>
+        ) : (
+          <ul className="list">
+            {finalOffers.map((a) => {
               const o = a.offer!
               const left = daysTo(o.expiresOn)
               return (
                 <li key={a.id}>
-                  <div className={`item${left <= 3 ? ' item--danger' : ''}`} style={{ alignItems: 'flex-start' }}>
-                    <Chip tone={left <= 3 ? 'danger' : 'primary'}><Receipt size={ICON_ROW} weight={ICON_WEIGHT} /></Chip>
+                  {/* No danger fill. An offer three days from expiry is normal
+                      business, not an error — the countdown carries the urgency
+                      and a red card just makes the page look broken. */}
+                  <div className="item item--offer" style={{ alignItems: 'flex-start' }}>
+                    <Chip tone="primary"><Receipt size={ICON_ROW} weight={ICON_WEIGHT} /></Chip>
 
                     <div className="grow">
-                      <Link to={`/cases/${a.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-                        <h3 style={{ fontSize: 'var(--text-h4)' }}>{a.company}</h3>
-                      </Link>
+                      <div className="row-tight wrap" style={{ gap: 'var(--sp-3)' }}>
+                        <Link to={`/cases/${a.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                          <h3 style={{ fontSize: 'var(--text-h4)' }}>{a.company}</h3>
+                        </Link>
+                        <Pill tone="pill--you">Final offer</Pill>
+                      </div>
                       <p className="secondary text-sm" style={{ marginTop: 3 }}>
                         {aed(o.amount)} · {productLabel[o.product]} · {plural(o.tenureMonths, 'month')} · fee {pct(o.feeRate)}
                       </p>
@@ -88,12 +153,13 @@ export function Offers() {
               )
             })}
           </ul>
-        </section>
-      )}
+        )}
+      </section>
 
+      {/* ---------------- Signed ---------------- */}
       {signed.length > 0 && (
         <section>
-          <SectionHead title="Signed" />
+          <SectionHead title={`Signed · ${signed.length}`} />
           <ul className="list">
             {signed.map((a) => (
               <li key={a.id}>

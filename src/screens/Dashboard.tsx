@@ -1,20 +1,45 @@
+import type { ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
-  Plus, CheckCircle, UploadSimple, PencilSimpleLine, ChatCircleDots, Hourglass,
-  ArrowRight, CaretRight, Check, TrendUp, WhatsappLogo,
+  CheckCircle, UploadSimple, PencilSimpleLine, ChatCircleDots, Hourglass,
+  ArrowRight, CaretRight, Check, TrendUp, WhatsappLogo, Target, ClipboardText,
+  CreditCard, SquaresFour, Pulse, BookOpen,
 } from '@phosphor-icons/react'
-import { applications, broker, clients, commissionPaid, payable, expected } from '../lib/data'
-import { partA, stageGroups } from '../lib/domain'
-import { aed, longDate, plural } from '../lib/format'
 import {
-  Button, EmptyState, ICON_EMPTY, ICON_INLINE, ICON_PILL, ICON_WEIGHT, PageHead, Pill, Progress,
+  applications, broker, clients, commissionPaid, dealsPaid, payable, TODAY,
+} from '../lib/data'
+import { partA, partB, stageGroups, tiers } from '../lib/domain'
+import { applyFilters, summary } from '../lib/reports'
+import { aed, daysBetween, longDate, pct, plural } from '../lib/format'
+import {
+  Button, EmptyState, ICON_EMPTY, ICON_INLINE, ICON_PILL, ICON_ROW, ICON_WEIGHT,
+  PageHead, Pill, Progress,
 } from '../components/ui'
-import { TierCard } from '../components/TierCard'
-
 
 const payableTotal = payable.reduce((s, a) => s + (a.commission ?? 0), 0)
-const expectedTotal = expected.reduce((s, a) => s + (a.commission ?? 0), 0)
 const topUpReady = clients.filter((c) => c.topUpEligibleInDays === 0)
+
+/* ---- Quarterly target ----
+   Gold's 4.5M is already cleared, so the bar that means anything is the one to
+   the tier being chased. Same anatomy as the reference card, honest numbers. */
+const nextTier = tiers.platinum
+const quarterDisbursed = broker.quarter.disbursed
+const quarterTarget = nextTier.quarterlyTarget
+const quarterPct = (quarterDisbursed / quarterTarget) * 100
+const daysLeftInQuarter = daysBetween(TODAY, broker.quarter.endsOn)
+const bonusOnPace = partB(quarterDisbursed, broker.tier)
+
+/* ---- Commission balance ----
+   "Last 30 days" is measured on the date the money landed, not the date the
+   deal disbursed — those are different questions and only one is the wallet. */
+const paidLast30 = applications
+  .filter((a) => a.commissionStatus === 'paid' && a.commissionDueOn && daysBetween(a.commissionDueOn, TODAY) <= 30)
+  .reduce((s, a) => s + (a.commission ?? 0), 0)
+
+/* ---- Partner pulse ----
+   Twelve months, because a quarter six weeks old has no funded cases in it and
+   a 0% approval rate would be a reporting artefact rather than a fact. */
+const pulse = summary(applyFilters({ period: 'last12', from: '', to: '', industry: 'all', product: 'all' }))
 
 /** What needs the broker, phrased as the action first and the client second. */
 const tasks = [
@@ -26,6 +51,19 @@ const tasks = [
 
 const funnel = stageGroups.filter((g) => g.inFunnel)
 
+/** Card header: title, one-line subtitle, and the card's own glyph on the right. */
+function CardHead({ id, title, sub, icon }: { id: string; title: string; sub: string; icon: ReactNode }) {
+  return (
+    <div className="card__head">
+      <div>
+        <h2 id={id}>{title}</h2>
+        <p className="secondary text-sm" style={{ marginTop: 3 }}>{sub}</p>
+      </div>
+      <span className="card__ico" aria-hidden>{icon}</span>
+    </div>
+  )
+}
+
 export function Dashboard() {
   const navigate = useNavigate()
   const counts = funnel.map((g) => ({ ...g, n: applications.filter((a) => g.stages.includes(a.stage)).length }))
@@ -33,35 +71,50 @@ export function Dashboard() {
 
   return (
     <div className="page">
+      {/* No action here: the top bar already carries "New case" and two
+          identical primary buttons within 60px of each other read as a bug. */}
       <PageHead
-        eyebrow={longDate('2026-08-11')}
         title={`Good morning, ${broker.name.split(' ')[0]}`}
-        meta="Your partner desk, in plain language."
-        actions={
-          <Button icon={<Plus size={ICON_INLINE} weight="bold" aria-hidden />} onClick={() => navigate('/new-case')}>
-            Submit a case
-          </Button>
-        }
+        meta={`${longDate(TODAY)} · Here is what needs your attention today.`}
       />
 
-      {/* The hero: tier, streak, ladder and the re-rate what-if. Replaces the
-           old target card — it covers the same ground and carries the one fact
-           that actually moves a broker. */}
-      <TierCard />
+      <div className="dash">
 
-      <div className="overview">
+        {/* ---------- Quarterly target ---------- */}
+        <section className="card card--xl card--rings" aria-labelledby="target">
+          <CardHead
+            id="target"
+            title="Quarterly target"
+            sub={`${broker.quarter.label} · ${plural(daysLeftInQuarter, 'day')} left`}
+            icon={<Target size={ICON_ROW} weight={ICON_WEIGHT} color="var(--gold-ink)" />}
+          />
 
-        {/* Waiting on you. */}
-        <section className="card card--xl" aria-labelledby="waiting">
-          <div className="between wrap" style={{ alignItems: 'flex-start' }}>
-            <div>
-              <h2 id="waiting">Waiting on you</h2>
-              <p className="secondary text-sm" style={{ marginTop: 3 }}>Small moves that keep cases moving.</p>
-            </div>
-            <Link to="/cases" className="text-sm semibold row-tight" style={{ gap: 6 }}>
-              View all <ArrowRight size={ICON_PILL} weight="bold" aria-hidden />
-            </Link>
+          <p className="dash__figure" style={{ marginTop: 'var(--sp-5)' }}>
+            {aed(quarterDisbursed, { compact: true })}
+            <span className="dash__figure-of"> of {aed(quarterTarget, { compact: true })}</span>
+          </p>
+          <p className="secondary text-sm" style={{ marginTop: 4 }}>
+            {quarterPct.toFixed(1)}% of the {nextTier.label} target is disbursed
+          </p>
+
+          <div style={{ marginTop: 'var(--sp-4)' }}>
+            <Progress value={quarterPct} tone="gold" large label="Quarterly disbursal against the Platinum target" />
           </div>
+
+          <div className="between wrap text-sm" style={{ marginTop: 'var(--sp-3)', gap: 'var(--sp-3)' }}>
+            <span className="secondary">On pace to unlock {aed(bonusOnPace)} bonus</span>
+            <span className="semibold">{aed(quarterTarget - quarterDisbursed, { compact: true })} to go</span>
+          </div>
+        </section>
+
+        {/* ---------- Waiting on you ---------- */}
+        <section className="card card--xl" aria-labelledby="waiting">
+          <CardHead
+            id="waiting"
+            title="Waiting on you"
+            sub={`${plural(tasks.length, 'action')} to keep cases moving`}
+            icon={<ClipboardText size={ICON_ROW} weight={ICON_WEIGHT} color="var(--primary-text)" />}
+          />
 
           {tasks.length > 0 ? (
             <div style={{ marginTop: 'var(--sp-4)' }}>
@@ -71,8 +124,8 @@ export function Dashboard() {
                     <t.icon size={ICON_INLINE} weight={ICON_WEIGHT} />
                   </span>
                   <span className="grow">
-                    <span className="task-line__title" style={{ display: 'block' }}>{t.action} · {t.company}</span>
-                    <span className="task-line__meta">{t.meta}</span>
+                    <span className="task-line__title" style={{ display: 'block' }}>{t.action}</span>
+                    <span className="task-line__meta">{t.company} · {t.meta.split(' · ')[1] ?? t.meta}</span>
                   </span>
                   <CaretRight size={ICON_PILL} weight="bold" aria-hidden style={{ marginTop: 4, flex: '0 0 auto' }} />
                 </Link>
@@ -87,57 +140,53 @@ export function Dashboard() {
           )}
         </section>
 
-        {/* Commission summary — the three states of money, figure on the right. */}
-        <section className="card card--xl" aria-labelledby="money">
-          <div className="between wrap" style={{ alignItems: 'flex-start' }}>
-            <div>
-              <h2 id="money">Commission summary</h2>
-              <p className="secondary text-sm" style={{ marginTop: 3 }}>Clear money, no surprises.</p>
-            </div>
-            <Link to="/commissions" className="text-sm semibold row-tight" style={{ gap: 6 }}>
-              Details <ArrowRight size={ICON_PILL} weight="bold" aria-hidden />
-            </Link>
-          </div>
+        {/* ---------- Commission balance ---------- */}
+        <section className="card card--xl" aria-labelledby="balance">
+          <CardHead
+            id="balance"
+            title="Commission balance"
+            sub="Paid to you this year"
+            icon={<CreditCard size={ICON_ROW} weight={ICON_WEIGHT} color="var(--success-ink)" />}
+          />
 
-          <div style={{ marginTop: 'var(--sp-4)' }}>
-            <div className="money-row">
-              <span>
-                <span className="semibold" style={{ display: 'block' }}>Paid to you</span>
-                <span className="text-xs muted">Released after first repayment</span>
-              </span>
-              <span className="money-row__figure" style={{ color: 'var(--success-ink)' }}>{aed(commissionPaid)}</span>
+          <p className="dash__figure" style={{ marginTop: 'var(--sp-5)', color: 'var(--success-ink)' }}>
+            {aed(commissionPaid)}
+          </p>
+          <p className="secondary text-sm" style={{ marginTop: 4 }}>
+            {aed(payableTotal)} pending release
+          </p>
+
+          <div className="dash__pair">
+            <div>
+              <p className="dash__sub-figure">{aed(paidLast30)}</p>
+              <p className="text-xs muted">Last 30 days</p>
             </div>
-            <div className="money-row">
-              <span>
-                <span className="semibold" style={{ display: 'block' }}>Payable</span>
-                <span className="text-xs muted">{plural(payable.length, 'deal')} funded, awaiting first repayment</span>
-              </span>
-              <span className="money-row__figure" style={{ color: 'var(--gold-ink)' }}>{aed(payableTotal)}</span>
-            </div>
-            <div className="money-row">
-              <span>
-                <span className="semibold" style={{ display: 'block' }}>In live offers</span>
-                <span className="text-xs muted">Not earned until the deal funds</span>
-              </span>
-              <span className="money-row__figure" style={{ color: 'var(--primary-text)' }}>{aed(expectedTotal)}</span>
+            <div>
+              <p className="dash__sub-figure">{dealsPaid}</p>
+              <p className="text-xs muted">Deals paid</p>
             </div>
           </div>
 
           <p className="text-xs muted" style={{ marginTop: 'var(--sp-4)' }}>
-            You earn 75% of the arrangement fee. At the 1.50% floor you earn a flat 1.0% of disbursal.
+            <Link to="/commissions">Open your wallet</Link> for what is payable and when it lands.
           </p>
         </section>
 
-        {/* Pipeline as labelled tracks, each one clickable through to its cases. */}
-        <section className="card card--xl" aria-labelledby="pipeline">
-          <div className="between wrap" style={{ alignItems: 'flex-start' }}>
+        {/* ---------- Your pipeline ---------- */}
+        <section className="card card--xl dash__two" aria-labelledby="pipeline">
+          <div className="card__head">
             <div>
-              <h2 id="pipeline">Pipeline</h2>
-              <p className="secondary text-sm" style={{ marginTop: 3 }}>Click a stage to see the clients inside it.</p>
+              <h2 id="pipeline">Your pipeline</h2>
+              <p className="secondary text-sm" style={{ marginTop: 3 }}>Click a stage to see the clients inside it</p>
             </div>
-            <Link to="/cases" className="text-sm semibold row-tight" style={{ gap: 6 }}>
-              All cases <ArrowRight size={ICON_PILL} weight="bold" aria-hidden />
-            </Link>
+            <div className="row-tight">
+              <Link to="/cases" className="text-sm semibold row-tight" style={{ gap: 6 }}>
+                All cases <ArrowRight size={ICON_PILL} weight="bold" aria-hidden />
+              </Link>
+              <span className="card__ico" aria-hidden>
+                <SquaresFour size={ICON_ROW} weight={ICON_WEIGHT} color="var(--primary-text)" />
+              </span>
+            </div>
           </div>
 
           <div style={{ marginTop: 'var(--sp-4)' }}>
@@ -158,9 +207,38 @@ export function Dashboard() {
           </div>
         </section>
 
-        {/* Ready for a top-up, spanning both columns. */}
+        {/* ---------- Partner pulse ---------- */}
+        <section className="card card--xl" aria-labelledby="pulse">
+          <CardHead
+            id="pulse"
+            title="Partner pulse"
+            sub="Across the last 12 months"
+            icon={<Pulse size={ICON_ROW} weight={ICON_WEIGHT} color="var(--gold-ink)" />}
+          />
+
+          <div className="dash__pulse">
+            <div>
+              <p className="dash__sub-figure">{aed(pulse.disbursed, { compact: true })}</p>
+              <p className="text-xs muted">Disbursal volume</p>
+            </div>
+            <div>
+              <p className="dash__sub-figure">{pct(pulse.conversion, 0)}</p>
+              <p className="text-xs muted">Approval rate</p>
+            </div>
+            <div>
+              <p className="dash__sub-figure">{pulse.avgDaysToFund.toFixed(1)}d</p>
+              <p className="text-xs muted">Avg. to funding</p>
+            </div>
+          </div>
+
+          <p className="text-xs muted" style={{ marginTop: 'var(--sp-4)' }}>
+            <Link to="/reports">See where cases stop</Link> and what each industry converts at.
+          </p>
+        </section>
+
+        {/* ---------- Ready for a top-up — kept from our build ---------- */}
         {topUpReady.length > 0 && (
-          <section className="card card--xl overview__wide" aria-labelledby="topups">
+          <section className="card card--xl dash__wide" aria-labelledby="topups">
             <div className="between wrap" style={{ alignItems: 'flex-start' }}>
               <div>
                 <h2 id="topups">Ready for a top-up</h2>
@@ -218,6 +296,29 @@ export function Dashboard() {
             </div>
           </section>
         )}
+
+        {/* ---------- Need a hand? ---------- */}
+        <section className="card card--xl dash__wide" aria-labelledby="help">
+          <div className="between wrap" style={{ alignItems: 'center', gap: 'var(--sp-5)' }}>
+            <div className="row">
+              <span className="avatar avatar--lg" aria-hidden>{broker.partnerManager.initials}</span>
+              <div>
+                <h2 id="help">Need a hand?</h2>
+                <p className="secondary text-sm" style={{ marginTop: 3 }}>
+                  {broker.partnerManager.name} usually replies in under 2 hours.
+                </p>
+              </div>
+            </div>
+            <div className="row-tight wrap">
+              <Button size="sm" icon={<ChatCircleDots size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden />}>
+                Message {broker.partnerManager.name.split(' ')[0]}
+              </Button>
+              <Button size="sm" variant="secondary" icon={<BookOpen size={ICON_INLINE} weight={ICON_WEIGHT} aria-hidden />}>
+                Partner playbook
+              </Button>
+            </div>
+          </div>
+        </section>
       </div>
 
       <p className="text-xs muted">

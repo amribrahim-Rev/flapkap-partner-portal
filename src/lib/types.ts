@@ -83,6 +83,7 @@ export interface Application {
   industry: string
   contactName: string
   contactPhone: string
+  contactEmail: string
   stage: Stage
   owner: Owner
   submittedOn: string
